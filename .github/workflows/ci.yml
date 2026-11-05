@@ -41,7 +41,8 @@ jobs:
             --checksums "$checksums" \
             --template packaging/homebrew/nameary.rb.tmpl \
             --output /tmp/nameary.rb
-          ruby -c /tmp/nameary.rb
+          grep -q 'class Nameary' /tmp/nameary.rb
+          grep -q 'version "0.0.0"' /tmp/nameary.rb
           bash -n scripts/update-homebrew-tap.sh
       - name: build
         run: go build ./cmd/nameary
