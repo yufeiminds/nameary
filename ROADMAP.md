@@ -18,7 +18,8 @@ security issue or a registry API change requires attention.
 - Richer detail panes and comparison filters.
 - Better rate-limit telemetry and per-source status in the UI.
 - Cache inspection/pruning commands and config migration.
-- Homebrew tap, Scoop/winget, signed artifacts and SBOM.
+- Homebrew tap, asdf plugin, mise installation, Scoop/winget, signed
+  artifacts and SBOM.
 
 ## v1.0 — stability
 

@@ -280,6 +280,7 @@ internal/config      TOML config and presets
 - [Threat model](docs/threat-model.md) and [assurance case](docs/assurance-case.md)
 - [Support](SUPPORT.md)
 - [Roadmap](ROADMAP.md)
+- [Distribution plan](docs/distribution.md)
 - [Open-source maturity](docs/open-source-maturity.md)
 - [Changelog](CHANGELOG.md)
 

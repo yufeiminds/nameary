@@ -33,7 +33,8 @@
 
 ## P1 — distribution and confidence
 
-- Homebrew tap + Scoop/winget manifests; verify deb/rpm/apk installs.
+- Homebrew tap, asdf plugin and mise installs; Scoop/winget manifests;
+  verify deb/rpm/apk installs.
 - Shell completions (Cobra already generates them) and a man page.
 - `golangci-lint`, `govulncheck`, SBOM (syft or goreleaser SBOM), and
   dependency update automation.
