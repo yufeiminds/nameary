@@ -1,0 +1,71 @@
+version: 2
+
+project_name: nameary
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: nameary
+    main: ./cmd/nameary
+    binary: nameary
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - darwin
+      - linux
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X github.com/yufeiminds/nameary/internal/version.Version={{ .Version }}
+      - -X github.com/yufeiminds/nameary/internal/version.Commit={{ .Commit }}
+      - -X github.com/yufeiminds/nameary/internal/version.Date={{ .Date }}
+
+archives:
+  - id: default
+    formats:
+      - tar.gz
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - LICENSE
+      - README.md
+      - THIRD_PARTY_NOTICES.md
+      - SECURITY.md
+    format_overrides:
+      - goos: windows
+        formats:
+          - zip
+
+checksum:
+  name_template: checksums.txt
+
+nfpms:
+  - id: packages
+    package_name: nameary
+    vendor: yufeiminds
+    homepage: https://github.com/yufeiminds/nameary
+    maintainer: yufeiminds
+    description: Find a name before you commit
+    license: Apache-2.0
+    contents:
+      - src: LICENSE
+        dst: /usr/share/licenses/nameary/LICENSE
+      - src: THIRD_PARTY_NOTICES.md
+        dst: /usr/share/licenses/nameary/THIRD_PARTY_NOTICES.md
+    formats:
+      - deb
+      - rpm
+      - apk
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+      - "^ci:"

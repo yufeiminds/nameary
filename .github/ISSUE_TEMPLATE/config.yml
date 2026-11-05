@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/yufeiminds/nameary/security/advisories/new
+    about: Report vulnerabilities privately; do not open a public issue.
+  - name: Documentation and support
+    url: https://github.com/yufeiminds/nameary/blob/main/SUPPORT.md
+    about: Read the support guide before opening an issue.
+  - name: Code of conduct concern
+    url: https://github.com/yufeiminds/nameary/blob/main/CODE_OF_CONDUCT.md
+    about: Review the enforcement process for community concerns.

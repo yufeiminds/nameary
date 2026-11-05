@@ -1,0 +1,11 @@
+# Default owners
+* @yufeiminds
+
+# Security / release / policy files
+/.github/ @yufeiminds
+/SECURITY.md @yufeiminds
+/GOVERNANCE.md @yufeiminds
+/CODE_OF_CONDUCT.md @yufeiminds
+/docs/security-audit.md @yufeiminds
+/docs/release.md @yufeiminds
+/.goreleaser.yaml @yufeiminds
