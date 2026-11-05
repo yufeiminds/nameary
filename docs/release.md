@@ -12,12 +12,24 @@ Building from source requires **Go 1.26+** because of Charm v2.
 
 ## Install
 
+Homebrew (macOS/Linux):
+
 ```bash
-go install github.com/yufeiminds/nameary/cmd/nameary@latest
+brew install yufeiminds/tap/nameary
+```
+
+mise (macOS/Linux/Windows):
+
+```bash
+mise use -g github:yufeiminds/nameary@latest
 ```
 
 Or download the archive for your platform from GitHub Releases and put the
-`nameary` binary on `PATH`.
+`nameary` binary on `PATH`. Building from source requires Go 1.26+:
+
+```bash
+go install github.com/yufeiminds/nameary/cmd/nameary@latest
+```
 
 ## Modes
 

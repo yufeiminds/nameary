@@ -33,25 +33,37 @@ brew install yufeiminds/tap/nameary
 nameary version
 ```
 
-### Plan
+### Implementation
 
-1. Create the public repository `yufeiminds/homebrew-tap`.
-2. Add `Formula/nameary.rb` with per-OS/arch URLs and SHA-256 values from the
-   release `checksums.txt`. The formula installs the binary with
-   `bin.install "nameary"` and tests `system "#{bin}/nameary", "version"`.
-3. Automate formula updates either with a small release script or with
-   GoReleaser's Homebrew publisher. GoReleaser v2 deprecates `brews`; a
-   hand-maintained formula template is the safer long-term choice for a
-   cross-platform CLI. `homebrew_casks` is the supported GoReleaser path, but it
-   is macOS-only; use it only if Linuxbrew support is not required.
-4. Add a `HOMEBREW_TAP_GITHUB_TOKEN` secret with write access to the tap and
-   wire it into the release workflow.
-5. Verify:
-   - `brew install --build-from-source yufeiminds/tap/nameary`
+1. The public repository `yufeiminds/homebrew-tap` is initialized with
+   `brew tap-new`.
+2. `packaging/homebrew/nameary.rb.tmpl` defines the formula with per-OS/arch
+   URLs and SHA-256 values from the release `checksums.txt`.
+3. `scripts/render-homebrew-formula.py` renders the template from
+   `dist/checksums.txt`; it fails if any of the four platform checksums is
+   missing.
+4. `scripts/update-homebrew-tap.sh` clones the tap, renders
+   `Formula/nameary.rb`, commits it, and pushes only when the formula changed.
+   The release workflow runs it after GoReleaser with the
+   `HOMEBREW_TAP_GITHUB_TOKEN` secret.
+5. Local validation: render a snapshot, publish it to a temporary bare tap,
+   `brew tap` + `brew install`, and run `nameary version`.
+6. Verify on a real release:
+   - `brew install yufeiminds/tap/nameary`
    - `brew test yufeiminds/tap/nameary`
    - `brew audit --strict --online yufeiminds/tap/nameary`
-6. Submit to `homebrew-core` only after the project meets Homebrew's notability
+7. Submit to `homebrew-core` only after the project meets Homebrew's notability
    bar. A tap is the correct first step.
+
+### Formula versus cask
+
+The formula is the right first target for a CLI: it works on macOS and Linux
+and does not put the binary through the Cask quarantine/Gatekeeper path. An
+unsigned cask can make macOS block or warn on first run, so adopting a cask
+later would require an Apple Developer ID and notarization to keep user trust.
+If the project later moves to a cask, use `tap_migrations.json`, delete the
+formula in the same tap update, and test the migration with an existing
+formula installation.
 
 ## asdf
 

@@ -9,7 +9,7 @@
 | OpenSSF | governance, contribution, support, threat model, CodeQL, Scorecard, Dependabot, dependency review |
 | Targets | 20 live sources; unit + e2e coverage; live smoke tested |
 | CLI modes | TUI by default on a TTY; `--format console` progressive; `table/json/ndjson` headless |
-| Packaging | goreleaser builds + deb/rpm/apk; release workflow on `v*` tags |
+| Packaging | goreleaser builds + deb/rpm/apk + Homebrew formula; release workflow on `v*` tags |
 | CI | Linux test/race/e2e/vet/build + manual/scheduled live smoke matrix |
 | Docs | README + GIF/screenshots + source and release docs |
 | Distribution | no Homebrew tap, Scoop/winget, signing, SBOM, or docs site |
@@ -33,8 +33,10 @@
 
 ## P1 — distribution and confidence
 
-- Homebrew tap, asdf plugin and mise installs; Scoop/winget manifests;
-  verify deb/rpm/apk installs.
+- [x] Homebrew tap formula automation implemented; first tagged release still
+  needs to exercise it.
+- asdf plugin and mise installs; Scoop/winget manifests; verify deb/rpm/apk
+  installs.
 - Shell completions (Cobra already generates them) and a man page.
 - `golangci-lint`, `govulncheck`, SBOM (syft or goreleaser SBOM), and
   dependency update automation.

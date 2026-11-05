@@ -11,6 +11,8 @@
   <a href="https://github.com/yufeiminds/nameary/releases"><img src="https://img.shields.io/github/v/release/yufeiminds/nameary?include_prereleases&sort=semver" alt="Latest Release"></a>
   <a href="LICENSE"><img src="https://img.shields.io/github/license/yufeiminds/nameary" alt="License"></a>
   <img src="https://img.shields.io/badge/platforms-macOS%20%7C%20Linux%20%7C%20Windows-2ea44f" alt="Platforms">
+  <a href="#install"><img src="https://img.shields.io/badge/Homebrew-install-FBB040?logo=homebrew&logoColor=white" alt="Homebrew"></a>
+  <a href="#install"><img src="https://img.shields.io/badge/mise-install-6E56CF" alt="mise"></a>
 </p>
 
 </div>
@@ -47,7 +49,25 @@ nameary acme
 
 ## Install
 
-Requires **Go 1.26+** (Charm v2).
+### Homebrew (recommended)
+
+```bash
+brew install yufeiminds/tap/nameary
+```
+
+### mise (recommended)
+
+```bash
+mise use -g github:yufeiminds/nameary@latest
+```
+
+Both install a prebuilt binary; no Go toolchain is required.
+
+### Other options
+
+Download the archive for your platform from
+[GitHub Releases](https://github.com/yufeiminds/nameary/releases), or build
+from source with **Go 1.26+**:
 
 ```bash
 go install github.com/yufeiminds/nameary/cmd/nameary@latest
