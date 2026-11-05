@@ -30,5 +30,18 @@ jobs:
         run: go test -race ./internal/...
       - name: e2e (mock registries)
         run: go test -count=1 ./e2e
+      - name: Homebrew formula template
+        run: |
+          checksums=$(mktemp)
+          for asset in darwin_amd64 darwin_arm64 linux_amd64 linux_arm64; do
+            printf '%064d  nameary_0.0.0_%s.tar.gz\n' 0 "$asset" >> "$checksums"
+          done
+          python3 scripts/render-homebrew-formula.py \
+            --version 0.0.0 \
+            --checksums "$checksums" \
+            --template packaging/homebrew/nameary.rb.tmpl \
+            --output /tmp/nameary.rb
+          ruby -c /tmp/nameary.rb
+          bash -n scripts/update-homebrew-tap.sh
       - name: build
         run: go build ./cmd/nameary
