@@ -10,6 +10,8 @@ permissions:
 
 jobs:
   dependency-review:
+    # Dependency review needs a public repository or GitHub Advanced Security.
+    if: ${{ github.event.repository.private == false }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7

@@ -61,7 +61,10 @@ update tooling, fuzzing, license, maintained status, packaging, pinned
 dependencies, security policy, signed releases and token permissions.
 
 The repository must be public and the workflow must have run at least once for
-Scorecard results to appear.
+Scorecard results to appear. CodeQL, Dependency review and Scorecard are
+therefore gated with `github.event.repository.private == false`; on a private
+repository those jobs are skipped instead of failing. They run automatically
+once the repository is made public (or GitHub Advanced Security is enabled).
 
 ## Known gaps
 
