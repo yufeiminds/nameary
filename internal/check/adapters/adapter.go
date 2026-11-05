@@ -16,6 +16,9 @@ import (
 type Options struct {
 	HTTP        *check.HTTP
 	GithubToken string
+	// BaseURL overrides every adapter's upstream. It exists so end-to-end
+	// tests can point the real binary at a deterministic mock registry.
+	BaseURL string
 }
 
 // All returns every registry checker (domains are added separately by app).
@@ -23,26 +26,27 @@ func All(opts Options) []check.Checker {
 	if opts.HTTP == nil {
 		opts.HTTP = check.NewHTTP()
 	}
+	base := opts.BaseURL
 	return []check.Checker{
-		NewNPM(opts.HTTP, ""),
-		NewPyPI(opts.HTTP, ""),
-		NewCrates(opts.HTTP, ""),
-		NewRubyGems(opts.HTTP, ""),
-		NewNuGet(opts.HTTP, ""),
-		NewDockerHub(opts.HTTP, ""),
-		NewHomebrew(opts.HTTP, ""),
-		NewPackagist(opts.HTTP, ""),
-		NewHex(opts.HTTP, ""),
-		NewPub(opts.HTTP, ""),
-		NewGitHub(opts.HTTP, "", opts.GithubToken),
-		NewMaven(opts.HTTP, ""),
-		NewConda(opts.HTTP, ""),
-		NewCocoaPods(opts.HTTP, ""),
-		NewAUR(opts.HTTP, ""),
-		NewSnap(opts.HTTP, ""),
-		NewChocolatey(opts.HTTP, ""),
-		NewHackage(opts.HTTP, ""),
-		NewJSR(opts.HTTP, ""),
+		NewNPM(opts.HTTP, base),
+		NewPyPI(opts.HTTP, base),
+		NewCrates(opts.HTTP, base),
+		NewRubyGems(opts.HTTP, base),
+		NewNuGet(opts.HTTP, base),
+		NewDockerHub(opts.HTTP, base),
+		NewHomebrew(opts.HTTP, base),
+		NewPackagist(opts.HTTP, base),
+		NewHex(opts.HTTP, base),
+		NewPub(opts.HTTP, base),
+		NewGitHub(opts.HTTP, base, opts.GithubToken),
+		NewMaven(opts.HTTP, base),
+		NewConda(opts.HTTP, base),
+		NewCocoaPods(opts.HTTP, base),
+		NewAUR(opts.HTTP, base),
+		NewSnap(opts.HTTP, base),
+		NewChocolatey(opts.HTTP, base),
+		NewHackage(opts.HTTP, base),
+		NewJSR(opts.HTTP, base),
 	}
 }
 

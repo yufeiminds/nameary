@@ -221,10 +221,14 @@ priority and cache TTL.
 
 ```bash
 go test ./...
-go test -race ./...
+go test -race ./internal/...
+go test -count=1 ./e2e
 go vet ./...
 go build -o nameary ./cmd/nameary
 ```
+
+Test layers, the live smoke matrix and local `act` CI are described in
+[`docs/testing.md`](docs/testing.md).
 
 Record the demo (requires [VHS](https://github.com/charmbracelet/vhs)):
 

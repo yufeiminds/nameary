@@ -1,0 +1,2 @@
+# Use the compact act image instead of the full GitHub runner image.
+-P ubuntu-latest=catthehacker/ubuntu:act-latest

@@ -27,6 +27,8 @@ jobs:
       - name: govulncheck
         run: go run golang.org/x/vuln/cmd/govulncheck@latest ./...
       - name: test
-        run: go test -race ./...
+        run: go test -race ./internal/...
+      - name: e2e (mock registries)
+        run: go test -count=1 ./e2e
       - name: build
         run: go build ./cmd/nameary

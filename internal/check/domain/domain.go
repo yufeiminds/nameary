@@ -43,6 +43,9 @@ type Checker struct {
 	Servers map[string]string
 	// DisableWhois is used by tests to keep the no-RDAP path offline.
 	DisableWhois bool
+	// DisableDNS skips the DNS fast path. The e2e build sets it together with
+	// a mock registry so every domain result comes from the mock.
+	DisableDNS bool
 
 	mu      sync.Mutex
 	loaded  bool
@@ -130,20 +133,22 @@ func (c *Checker) Check(ctx context.Context, q string) (check.Result, error) {
 	// Fast path: if the domain is delegated, it is definitely registered. A
 	// missing NS record does NOT mean it is free (it may be registered but
 	// parked), so we still ask RDAP.
-	ns, nsErr := c.resolver.LookupNS(ctx, domain)
-	if nsErr == nil && len(ns) > 0 {
-		return check.Result{
-			Status:     check.StatusTaken,
-			Confidence: check.Certain,
-			Query:      domain,
-			Summary:    "delegated · " + strconv.Itoa(len(ns)) + " NS",
-			SourceURL:  "https://www.whois.com/whois/" + domain,
-			FetchedAt:  time.Now(),
-			Fields: []check.Field{
-				{Key: "dns", Value: nameservers(ns)},
-				{Key: "note", Value: "DNS delegation is a fast signal; RDAP has the registration details."},
-			},
-		}, nil
+	if !c.DisableDNS {
+		ns, nsErr := c.resolver.LookupNS(ctx, domain)
+		if nsErr == nil && len(ns) > 0 {
+			return check.Result{
+				Status:     check.StatusTaken,
+				Confidence: check.Certain,
+				Query:      domain,
+				Summary:    "delegated · " + strconv.Itoa(len(ns)) + " NS",
+				SourceURL:  "https://www.whois.com/whois/" + domain,
+				FetchedAt:  time.Now(),
+				Fields: []check.Field{
+					{Key: "dns", Value: nameservers(ns)},
+					{Key: "note", Value: "DNS delegation is a fast signal; RDAP has the registration details."},
+				},
+			}, nil
+		}
 	}
 
 	base := c.serverFor(ctx, tldOf(domain))

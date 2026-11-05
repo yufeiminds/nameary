@@ -150,12 +150,18 @@ func Prepare(ctx context.Context, opts Options) (*Session, error) {
 	}
 
 	h := check.NewHTTP()
+	baseURL := testBaseURL()
 	s := &Session{Options: opts, Checkers: map[check.Target]check.Checker{}}
 
-	for _, c := range adapters.All(adapters.Options{HTTP: h, GithubToken: opts.GithubToken}) {
+	for _, c := range adapters.All(adapters.Options{HTTP: h, GithubToken: opts.GithubToken, BaseURL: baseURL}) {
 		s.Checkers[c.Target()] = c
 	}
-	s.Checkers[check.TargetDomains] = domain.New(h, "")
+	domainChecker := domain.New(h, baseURL)
+	if baseURL != "" {
+		// E2E builds must not depend on public DNS.
+		domainChecker.DisableDNS = true
+	}
+	s.Checkers[check.TargetDomains] = domainChecker
 
 	var store *cache.Store
 	if !opts.NoCache {

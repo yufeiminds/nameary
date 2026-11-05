@@ -41,8 +41,9 @@ awarded.
 
 | Expectation | Evidence |
 |---|---|
-| Automated tests | `go test ./...` (61 tests) |
-| Race detector | `go test -race ./...` |
+| Automated tests | `go test ./internal/...` (unit + integration) |
+| End-to-end tests | `go test -count=1 ./e2e` (compiled CLI, every adapter, mock registry) |
+| Race detector | `go test -race ./internal/...` |
 | Static checks | `go vet`, `staticcheck`, `gosec` |
 | Live integration smoke | `scripts/smoke.sh`, `smoke.yml` |
 | Cross-platform build | macOS, Linux, Windows amd64/arm64 via goreleaser |

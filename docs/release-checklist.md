@@ -4,13 +4,13 @@
 
 | Area | Status |
 |---|---|
-| Build / tests | `go build ./...`, `go test ./...`, `go test -race ./...`, `go vet ./...`, `gofmt` pass |
+| Build / tests | `go build ./...`, `go test ./internal/...`, `go test -race ./internal/...`, `go test -count=1 ./e2e`, `go vet ./...`, `gofmt` pass |
 | Security | govulncheck/gosec/staticcheck clean; audit in `security-audit.md` |
 | OpenSSF | governance, contribution, support, threat model, CodeQL, Scorecard, Dependabot, dependency review |
-| Targets | 20 live sources; 61 test functions; live smoke tested |
+| Targets | 20 live sources; unit + e2e coverage; live smoke tested |
 | CLI modes | TUI by default on a TTY; `--format console` progressive; `table/json/ndjson` headless |
 | Packaging | goreleaser builds + deb/rpm/apk; release workflow on `v*` tags |
-| CI | Linux test/race/vet/build + manual/scheduled live smoke matrix |
+| CI | Linux test/race/e2e/vet/build + manual/scheduled live smoke matrix |
 | Docs | README + plan + GIF/screenshots + source and release docs |
 | Distribution | no Homebrew tap, Scoop/winget, signing, SBOM, or docs site |
 | Repo | committed and tagged `v0.1.0` (not pushed) |
@@ -57,7 +57,8 @@
 ```bash
 gofmt -l .
 go vet ./...
-go test -race ./...
+go test -race ./internal/...
+go test -count=1 ./e2e
 goreleaser check
 goreleaser release --clean   # on a clean v* tag
 ```
