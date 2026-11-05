@@ -79,7 +79,11 @@ func (c *Checker) whoisServer(ctx context.Context, tld string) (string, error) {
 
 func queryWhois(ctx context.Context, server, query string) (string, error) {
 	d := net.Dialer{Timeout: 5 * time.Second}
-	conn, err := d.DialContext(ctx, "tcp", net.JoinHostPort(server, "43"))
+	addr := server
+	if _, _, splitErr := net.SplitHostPort(server); splitErr != nil {
+		addr = net.JoinHostPort(server, "43")
+	}
+	conn, err := d.DialContext(ctx, "tcp", addr)
 	if err != nil {
 		return "", err
 	}

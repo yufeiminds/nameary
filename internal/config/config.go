@@ -106,11 +106,12 @@ func Path() string {
 
 // Load reads the config, falling back to defaults when the file is absent.
 func Load() (Config, error) {
-	cfg := Defaults()
+	var cfg Config
 	path := Path()
 	data, err := os.ReadFile(path) // #nosec G304 -- path is the user-selected config file.
 	if err != nil {
 		if os.IsNotExist(err) {
+			cfg.applyDefaults()
 			return cfg, nil
 		}
 		return cfg, err
