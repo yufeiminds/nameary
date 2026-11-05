@@ -1,6 +1,19 @@
-# nameary
+<div align="center">
 
-> Find a name before you commit.
+<h1>nameary</h1>
+
+<p><strong>Find a name before you commit.</strong></p>
+
+<p>
+  <a href="https://github.com/yufeiminds/nameary/actions/workflows/ci.yml"><img src="https://github.com/yufeiminds/nameary/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://pkg.go.dev/github.com/yufeiminds/nameary"><img src="https://pkg.go.dev/badge/github.com/yufeiminds/nameary.svg" alt="Go Reference"></a>
+  <a href="go.mod"><img src="https://img.shields.io/github/go-mod/go-version/yufeiminds/nameary" alt="Go Version"></a>
+  <a href="https://github.com/yufeiminds/nameary/releases"><img src="https://img.shields.io/github/v/release/yufeiminds/nameary?include_prereleases&sort=semver" alt="Latest Release"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/yufeiminds/nameary" alt="License"></a>
+  <img src="https://img.shields.io/badge/platforms-macOS%20%7C%20Linux%20%7C%20Windows-2ea44f" alt="Platforms">
+</p>
+
+</div>
 
 `nameary` checks a name across **20 sources** — domains, package registries and
 handles — in parallel. On a terminal it opens a full-screen interactive TUI.

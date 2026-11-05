@@ -11,7 +11,7 @@
 | CLI modes | TUI by default on a TTY; `--format console` progressive; `table/json/ndjson` headless |
 | Packaging | goreleaser builds + deb/rpm/apk; release workflow on `v*` tags |
 | CI | Linux test/race/e2e/vet/build + manual/scheduled live smoke matrix |
-| Docs | README + plan + GIF/screenshots + source and release docs |
+| Docs | README + GIF/screenshots + source and release docs |
 | Distribution | no Homebrew tap, Scoop/winget, signing, SBOM, or docs site |
 | Repo | committed and tagged `v0.1.0` (not pushed) |
 
