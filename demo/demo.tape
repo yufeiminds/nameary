@@ -10,9 +10,11 @@ Set TypingSpeed 55ms
 
 Type "./nameary acme --preset all --cache-mode off"
 Enter
-Sleep 12s
-Type "q"
+Wait+Screen /done/
 Sleep 1s
+Type "q"
+Sleep 500ms
 Type "./nameary acme --format console --preset all --cache-mode off"
 Enter
-Sleep 12s
+Wait+Screen /available.*taken/
+Sleep 1s

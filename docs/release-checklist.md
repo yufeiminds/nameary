@@ -10,10 +10,10 @@
 | Targets | 20 live sources; unit + e2e coverage; live smoke tested |
 | CLI modes | TUI by default on a TTY; `--format console` progressive; `table/json/ndjson` headless |
 | Packaging | goreleaser builds + deb/rpm/apk + Homebrew formula; release workflow on `v*` tags |
-| CI | Linux test/race/e2e/vet/build + manual/scheduled live smoke matrix |
+| CI | Linux test/race/e2e/vet/build + Homebrew formula check + manual/scheduled live smoke matrix |
 | Docs | README + GIF/screenshots + source and release docs |
 | Distribution | no Homebrew tap, Scoop/winget, signing, SBOM, or docs site |
-| Repo | committed and tagged `v0.1.0` (not pushed) |
+| Repo | committed and tagged `v0.1.1` (not pushed) |
 
 ## P0 — completed
 
@@ -69,7 +69,7 @@ goreleaser release --clean   # on a clean v* tag
 ## Main risks
 
 - External APIs change or rate-limit without notice; the conservative
-  `unknown` state limits false positives.
+  `timeout`, `rate_limit` and `unknown` states limit false positives.
 - CocoaPods/Hackage use page-existence checks, not registry metadata.
 - Conda's fuzzy search can be truncated; it returns `unknown` instead of
   guessing.

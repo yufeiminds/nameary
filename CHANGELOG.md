@@ -1,5 +1,23 @@
 # Changelog
 
+## v0.1.1
+
+Distribution and CLI polish.
+
+- Homebrew and mise are the primary installation paths.
+- The release workflow renders `Formula/nameary.rb` from the release
+  `checksums.txt` and publishes it to `yufeiminds/homebrew-tap` automatically.
+  An empty tap repository is bootstrapped on the first release.
+- Homebrew formula template is validated in CI and supports macOS/Linux on
+  amd64 and arm64; a post-release macOS job verifies the tap install.
+- Added `nameary --version`.
+- Added `nameary cache path` and `nameary cache clear`.
+- Added distinct `timeout` and `rate_limit` result statuses; they are no
+  longer collapsed into `unknown`.
+- Default preset is now `all`; default request timeout is `3s`. Use
+  `--preset indie` for the previous fast subset.
+- Release checks run the race detector and the mock-registry e2e suite.
+
 ## v0.1.0
 
 Initial release.
