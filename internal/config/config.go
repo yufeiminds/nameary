@@ -16,7 +16,8 @@ type Preset struct {
 	TLDs    []string
 }
 
-// Presets are intentionally opinionated: indie is the fast, useful default.
+// Presets are intentionally opinionated: all sources is the default; use
+// indie for a fast subset.
 var Presets = map[string]Preset{
 	"indie": {
 		Targets: []string{"domains", "npm", "pypi", "github"},
@@ -78,13 +79,13 @@ type Config struct {
 
 // Defaults returns the built-in configuration.
 func Defaults() Config {
-	p := Presets["indie"]
+	p := Presets["all"]
 	return Config{
-		Preset:      "indie",
+		Preset:      "all",
 		TLDs:        append([]string(nil), p.TLDs...),
 		Targets:     append([]string(nil), p.Targets...),
 		Concurrency: 16,
-		Timeout:     "",
+		Timeout:     "3s",
 		CacheTTL:    "",
 		Github: struct {
 			TokenEnv string `toml:"token_env"`
@@ -144,6 +145,12 @@ func (c *Config) applyDefaults() {
 	}
 	if c.Concurrency <= 0 {
 		c.Concurrency = d.Concurrency
+	}
+	if c.Timeout == "" {
+		c.Timeout = d.Timeout
+	}
+	if c.CacheTTL == "" {
+		c.CacheTTL = d.CacheTTL
 	}
 	if c.Github.TokenEnv == "" {
 		c.Github.TokenEnv = d.Github.TokenEnv

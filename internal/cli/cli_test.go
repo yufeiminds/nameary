@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"bytes"
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -9,6 +11,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/yufeiminds/nameary/internal/cache"
 	"github.com/yufeiminds/nameary/internal/config"
 )
 
@@ -74,7 +77,7 @@ func TestNewRootFlagsAndCommands(t *testing.T) {
 	for _, c := range root.Commands() {
 		names[c.Name()] = true
 	}
-	for _, want := range []string{"check", "version", "config"} {
+	for _, want := range []string{"check", "version", "config", "cache"} {
 		if !names[want] {
 			t.Fatalf("missing command %s in %v", want, names)
 		}
@@ -106,7 +109,7 @@ func TestResolveOptionsDefaults(t *testing.T) {
 	if opts.format != "auto" || opts.Concurrency != 16 || opts.NoCache || opts.Refresh {
 		t.Fatalf("opts=%+v", opts)
 	}
-	if len(opts.Targets) != len(config.Presets["indie"].Targets) || len(opts.TLDs) == 0 {
+	if len(opts.Targets) != len(config.Presets["all"].Targets) || len(opts.TLDs) == 0 || opts.Timeout != 3*time.Second {
 		t.Fatalf("targets=%v tlds=%v", opts.Targets, opts.TLDs)
 	}
 }
@@ -380,5 +383,54 @@ func TestRunNameRequiredFormats(t *testing.T) {
 		if err == nil || !asExit(err, &ee) || ee.code != 2 {
 			t.Fatalf("format=%s err=%v", format, err)
 		}
+	}
+}
+
+func TestVersionFlag(t *testing.T) {
+	root := newRoot()
+	var out bytes.Buffer
+	root.SetOut(&out)
+	root.SetArgs([]string{"--version"})
+	if err := root.Execute(); err != nil {
+		t.Fatal(err)
+	}
+	if got := strings.TrimSpace(out.String()); got != versionString() {
+		t.Fatalf("got %q want %q", got, versionString())
+	}
+}
+
+func TestCacheCommands(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	path := cache.DefaultPath()
+	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(path, []byte("cache"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	run := func(args ...string) string {
+		root := newRoot()
+		var out bytes.Buffer
+		root.SetOut(&out)
+		root.SetArgs(args)
+		if err := root.Execute(); err != nil {
+			t.Fatal(err)
+		}
+		return out.String()
+	}
+
+	if got := run("cache", "path"); !strings.Contains(got, "nameary") {
+		t.Fatalf("cache path=%q", got)
+	}
+	if got := run("cache", "clear"); !strings.Contains(got, "cleared") {
+		t.Fatalf("cache clear=%q", got)
+	}
+	if _, err := os.Stat(path); !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("cache still exists: %v", err)
+	}
+	if got := run("cache", "clear"); !strings.Contains(got, "already empty") {
+		t.Fatalf("second clear=%q", got)
 	}
 }

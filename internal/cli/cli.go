@@ -18,6 +18,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/yufeiminds/nameary/internal/app"
+	"github.com/yufeiminds/nameary/internal/cache"
 	"github.com/yufeiminds/nameary/internal/check"
 	"github.com/yufeiminds/nameary/internal/check/domain"
 	"github.com/yufeiminds/nameary/internal/config"
@@ -77,6 +78,8 @@ func newRoot() *cobra.Command {
 			return run(cmd, name)
 		},
 	}
+	root.Version = versionString()
+	root.SetVersionTemplate("{{.Version}}\n")
 	addFlags(root)
 
 	checkCmd := &cobra.Command{
@@ -105,6 +108,7 @@ func newRoot() *cobra.Command {
 	})
 
 	root.AddCommand(newConfigCmd())
+	root.AddCommand(newCacheCmd())
 	return root
 }
 
@@ -119,11 +123,11 @@ func argError(args []string, base string) error {
 
 func addFlags(cmd *cobra.Command) {
 	f := cmd.Flags()
-	f.String("preset", "", "preset: indie, web, go, rust, jvm, apple, linux, data, all")
+	f.String("preset", "", "preset: all (default), indie, web, go, rust, jvm, apple, linux, data")
 	f.StringSlice("targets", nil, "comma-separated targets or all (domains, npm, pypi, crates, rubygems, nuget, dockerhub, homebrew, packagist, hex, pub, github, maven, conda, cocoapods, aur, snap, chocolatey, hackage, jsr)")
 	f.StringSlice("tlds", nil, "comma-separated TLDs (com, io, dev, app, ai, co...)")
 	f.Int("concurrency", 0, "global concurrent checks (default 16)")
-	f.Duration("timeout", 0, "override the per-request timeout")
+	f.Duration("timeout", 0, "override the per-request timeout (default 3s)")
 	f.String("format", "auto", "output format: auto, tui, console, table, json, ndjson")
 	f.String("style", "auto", "appearance: auto, plain, ascii, mono, calm (comma-separated)")
 	f.Bool("only-available", false, "only show available results")
@@ -419,6 +423,38 @@ func setupDebug() {
 
 func versionString() string {
 	return version.String()
+}
+
+func newCacheCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "cache",
+		Short: "Inspect or clear the result cache",
+	}
+	cmd.AddCommand(&cobra.Command{
+		Use:   "path",
+		Short: "Print the cache database path",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			fmt.Fprintln(cmd.OutOrStdout(), cache.DefaultPath())
+			return nil
+		},
+	})
+	cmd.AddCommand(&cobra.Command{
+		Use:   "clear",
+		Short: "Remove the default cache database",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			path := cache.DefaultPath()
+			if err := os.Remove(path); err != nil {
+				if errors.Is(err, os.ErrNotExist) {
+					fmt.Fprintln(cmd.OutOrStdout(), "cache is already empty")
+					return nil
+				}
+				return fmt.Errorf("clear cache: %w", err)
+			}
+			fmt.Fprintf(cmd.OutOrStdout(), "cleared %s\n", path)
+			return nil
+		},
+	})
+	return cmd
 }
 
 func newConfigCmd() *cobra.Command {

@@ -8,7 +8,11 @@ nameary/0.1 (+https://github.com/yufeiminds/nameary)
 
 Every request shares an HTTP client, uses a per-target semaphore and a cache
 (bbolt, on by default). Retries are limited to 429/5xx and transient network
-errors. Timeouts are reported as `unknown`, never `available`.
+errors. Timeouts are reported as `timeout`, never `available`.
+
+The per-target timeouts below apply when no global override is set. The default
+CLI/config timeout is `3s`; `--timeout` or the config `timeout` key overrides
+every target.
 
 ## Targets
 
