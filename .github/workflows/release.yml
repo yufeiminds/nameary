@@ -8,9 +8,14 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
         with:
@@ -20,7 +25,9 @@ jobs:
           go-version: "1.26.10"
           cache: true
       - name: test
-        run: go test ./...
+        run: go test -race ./internal/...
+      - name: e2e
+        run: go test -count=1 ./e2e
       - name: goreleaser
         uses: goreleaser/goreleaser-action@v7
         with:
@@ -34,3 +41,13 @@ jobs:
         run: bash scripts/update-homebrew-tap.sh
         env:
           HOMEBREW_TAP_GITHUB_TOKEN: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
+
+  homebrew-verify:
+    needs: goreleaser
+    runs-on: macos-latest
+    timeout-minutes: 15
+    steps:
+      - name: Install from the tap
+        run: brew install yufeiminds/tap/nameary
+      - name: Verify the binary
+        run: nameary version

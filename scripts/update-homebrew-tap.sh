@@ -25,7 +25,14 @@ if [ -n "$TAP_TOKEN" ]; then
   gh auth setup-git
 fi
 
-git clone --depth 1 --branch "$TAP_BRANCH" "$TAP_REPO_URL" "$TMP/tap"
+if git ls-remote --exit-code --heads "$TAP_REPO_URL" "$TAP_BRANCH" >/dev/null 2>&1; then
+  git clone --depth 1 --branch "$TAP_BRANCH" "$TAP_REPO_URL" "$TMP/tap"
+else
+  # Bootstrap an empty tap so the release workflow never needs a manual push.
+  git init -q -b "$TAP_BRANCH" "$TMP/tap"
+  git -C "$TMP/tap" remote add origin "$TAP_REPO_URL"
+  cp packaging/homebrew/tap-README.md "$TMP/tap/README.md"
+fi
 
 python3 scripts/render-homebrew-formula.py \
   --version "$VERSION" \
@@ -43,6 +50,9 @@ if [ -z "$(git -C "$TMP/tap" status --porcelain -- Formula/nameary.rb)" ]; then
 fi
 
 git -C "$TMP/tap" add Formula/nameary.rb
+if [ -f "$TMP/tap/README.md" ]; then
+  git -C "$TMP/tap" add README.md
+fi
 git -C "$TMP/tap" commit -m "nameary ${VERSION}"
 git -C "$TMP/tap" push origin "HEAD:${TAP_BRANCH}"
 echo "updated homebrew-tap to nameary ${VERSION}"

@@ -46,13 +46,17 @@ nameary version
    `Formula/nameary.rb`, commits it, and pushes only when the formula changed.
    The release workflow runs it after GoReleaser with the
    `HOMEBREW_TAP_GITHUB_TOKEN` secret.
-5. Local validation: render a snapshot, publish it to a temporary bare tap,
-   `brew tap` + `brew install`, and run `nameary version`.
-6. Verify on a real release:
+5. The updater bootstraps the tap when it has no `main` branch, so the first
+   release does not require a manual push to `homebrew-tap`.
+6. Local validation: render a snapshot, publish it to a temporary empty bare
+   tap, `brew tap` + `brew install`, and run `nameary version`.
+7. CI validates the renderer and the empty-tap bootstrap path. The release
+   workflow also installs from the real tap on macOS after publishing.
+8. Verify on a real release:
    - `brew install yufeiminds/tap/nameary`
    - `brew test yufeiminds/tap/nameary`
    - `brew audit --strict --online yufeiminds/tap/nameary`
-7. Submit to `homebrew-core` only after the project meets Homebrew's notability
+9. Submit to `homebrew-core` only after the project meets Homebrew's notability
    bar. A tap is the correct first step.
 
 ### Formula versus cask
