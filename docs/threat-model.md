@@ -40,7 +40,7 @@ boundary once a URL is handed off.
 | Path traversal | Export names are restricted to a safe character set and generated in the CWD |
 | Resource exhaustion | Caps on name length, TLD count, concurrency and timeout; bounded response bodies |
 | Dependency compromise | Pinned modules, Dependabot, dependency review, CodeQL, govulncheck |
-| Wrong “available” result | 404-only availability; timeouts/429/5xx become `unknown`; confidence levels |
+| Wrong “available” result | 404-only availability; timeouts become `timeout`, 429 becomes `rate_limit`, 5xx stays `unknown`; confidence levels |
 | GitHub quota exhaustion | Token guidance, small concurrency, 12h cache, HTML fallback |
 | WHOIS/DNS privacy | Only public registry endpoints; no telemetry; cache is local |
 | Release tampering | Checksums, goreleaser, CI tests, Scorecard; signing is a future hardening item |

@@ -182,8 +182,8 @@ func TestRateLimitBecomesError(t *testing.T) {
 		t.Fatalf("exit=%d stderr=%s", code, stderr)
 	}
 	rec := oneRecord(t, stdout)
-	if rec.Status != "unknown" || rec.Error == "" {
-		t.Fatalf("rate limit should surface as unknown with an error: %+v", rec)
+	if rec.Status != "rate_limit" || rec.Error == "" {
+		t.Fatalf("rate limit should surface as rate_limit with an error: %+v", rec)
 	}
 }
 

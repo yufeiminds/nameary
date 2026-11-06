@@ -60,6 +60,8 @@ const (
 	StatusError
 	StatusSkipped
 	StatusCanceled
+	StatusTimeout
+	StatusRateLimited
 )
 
 func (s Status) String() string {
@@ -80,6 +82,10 @@ func (s Status) String() string {
 		return "skipped"
 	case StatusCanceled:
 		return "canceled"
+	case StatusTimeout:
+		return "timeout"
+	case StatusRateLimited:
+		return "rate_limit"
 	default:
 		return "unknown"
 	}
@@ -88,7 +94,7 @@ func (s Status) String() string {
 // IsFinal reports whether the status will not change without a rerun.
 func (s Status) IsFinal() bool {
 	switch s {
-	case StatusAvailable, StatusTaken, StatusUnknown, StatusError, StatusSkipped, StatusCanceled:
+	case StatusAvailable, StatusTaken, StatusUnknown, StatusError, StatusSkipped, StatusCanceled, StatusTimeout, StatusRateLimited:
 		return true
 	}
 	return false
@@ -238,12 +244,14 @@ func ErrorResult(err error) Result {
 	switch {
 	case errors.Is(err, context.Canceled):
 		status = StatusCanceled
-	case errors.Is(err, context.DeadlineExceeded), IsRateLimited(err):
-		status = StatusUnknown
+	case errors.Is(err, context.DeadlineExceeded):
+		status = StatusTimeout
+	case IsRateLimited(err):
+		status = StatusRateLimited
 	default:
 		var ne net.Error
 		if errors.As(err, &ne) && ne.Timeout() {
-			status = StatusUnknown
+			status = StatusTimeout
 		}
 		var he *HTTPStatusError
 		if errors.As(err, &he) && he.Code >= 500 {

@@ -542,6 +542,7 @@ func TestThemeHelpers(t *testing.T) {
 	for _, s := range []check.Status{
 		check.StatusAvailable, check.StatusTaken, check.StatusUnknown, check.StatusError,
 		check.StatusChecking, check.StatusSkipped, check.StatusCanceled, check.StatusQueued,
+		check.StatusTimeout, check.StatusRateLimited,
 	} {
 		if th.statusColor(s) == nil || th.glyph(s, "") == "" || th.flashColor(s) == nil {
 			t.Fatalf("missing theme data for %v", s)
@@ -727,7 +728,7 @@ func TestViewHelpers(t *testing.T) {
 
 	for _, s := range []check.Status{
 		check.StatusQueued, check.StatusChecking, check.StatusAvailable, check.StatusTaken,
-		check.StatusUnknown, check.StatusError, check.StatusSkipped,
+		check.StatusUnknown, check.StatusError, check.StatusSkipped, check.StatusTimeout, check.StatusRateLimited,
 	} {
 		r := &row{status: s, job: engine.Job{Category: check.CategoryDomains}, result: check.Result{Err: errors.New("boom")}}
 		if got := m.statusMeta(r); got == "" {

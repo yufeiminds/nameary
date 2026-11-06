@@ -11,13 +11,13 @@ import (
 )
 
 func TestErrorResult(t *testing.T) {
-	if got := ErrorResult(context.DeadlineExceeded); got.Status != StatusUnknown {
+	if got := ErrorResult(context.DeadlineExceeded); got.Status != StatusTimeout {
 		t.Fatalf("deadline status=%v", got.Status)
 	}
 	if got := ErrorResult(context.Canceled); got.Status != StatusCanceled {
 		t.Fatalf("canceled status=%v", got.Status)
 	}
-	if got := ErrorResult(&HTTPStatusError{Code: http.StatusTooManyRequests}); got.Status != StatusUnknown {
+	if got := ErrorResult(&HTTPStatusError{Code: http.StatusTooManyRequests}); got.Status != StatusRateLimited {
 		t.Fatalf("429 status=%v", got.Status)
 	}
 	if got := ErrorResult(&HTTPStatusError{Code: http.StatusBadGateway}); got.Status != StatusUnknown {
@@ -68,7 +68,8 @@ func TestStatusAndConfidenceStrings(t *testing.T) {
 			t.Fatalf("%d: got %q want %q", s, got, want)
 		}
 	}
-	if !StatusAvailable.IsFinal() || !StatusCanceled.IsFinal() || StatusQueued.IsFinal() || StatusChecking.IsFinal() {
+	if !StatusAvailable.IsFinal() || !StatusCanceled.IsFinal() || !StatusTimeout.IsFinal() || !StatusRateLimited.IsFinal() ||
+		StatusQueued.IsFinal() || StatusChecking.IsFinal() {
 		t.Fatal("IsFinal mapping wrong")
 	}
 	conf := map[Confidence]string{Certain: "certain", Likely: "likely", Low: "low", Confidence(99): "unknown"}
@@ -112,9 +113,9 @@ func TestErrorResultBranches(t *testing.T) {
 		want Status
 	}{
 		{context.Canceled, StatusCanceled},
-		{context.DeadlineExceeded, StatusUnknown},
-		{timeoutErr{}, StatusUnknown},
-		{&HTTPStatusError{Code: 429}, StatusUnknown},
+		{context.DeadlineExceeded, StatusTimeout},
+		{timeoutErr{}, StatusTimeout},
+		{&HTTPStatusError{Code: 429}, StatusRateLimited},
 		{&HTTPStatusError{Code: 500}, StatusUnknown},
 		{&HTTPStatusError{Code: 403}, StatusError},
 		{errors.New("bad"), StatusError},

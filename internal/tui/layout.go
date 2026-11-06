@@ -126,12 +126,14 @@ func statusRank(s check.Status) int {
 		return 3
 	case check.StatusQueued:
 		return 4
-	case check.StatusError:
+	case check.StatusTimeout, check.StatusRateLimited:
 		return 5
-	case check.StatusSkipped, check.StatusCanceled:
+	case check.StatusError:
 		return 6
-	default:
+	case check.StatusSkipped, check.StatusCanceled:
 		return 7
+	default:
+		return 8
 	}
 }
 

@@ -131,6 +131,12 @@ func printSummary(w io.Writer, r Result) {
 		fmt.Sprintf("%d taken", r.Counts[check.StatusTaken]),
 		fmt.Sprintf("%d unknown", r.Counts[check.StatusUnknown]),
 	}
+	if n := r.Counts[check.StatusTimeout]; n > 0 {
+		parts = append(parts, fmt.Sprintf("%d timeout", n))
+	}
+	if n := r.Counts[check.StatusRateLimited]; n > 0 {
+		parts = append(parts, fmt.Sprintf("%d rate limited", n))
+	}
 	if n := r.Counts[check.StatusError]; n > 0 {
 		parts = append(parts, fmt.Sprintf("%d error", n))
 	}
@@ -200,6 +206,10 @@ func glyphFor(s check.Status, ascii bool) (string, string) {
 			return "x", "\x1b[31m"
 		case check.StatusUnknown:
 			return "!", "\x1b[33m"
+		case check.StatusTimeout:
+			return "T", "\x1b[33m"
+		case check.StatusRateLimited:
+			return "R", "\x1b[33m"
 		case check.StatusError:
 			return "X", "\x1b[31m"
 		case check.StatusSkipped, check.StatusCanceled:
@@ -215,6 +225,10 @@ func glyphFor(s check.Status, ascii bool) (string, string) {
 		return "●", "\x1b[31m"
 	case check.StatusUnknown:
 		return "!", "\x1b[33m"
+	case check.StatusTimeout:
+		return "◷", "\x1b[33m"
+	case check.StatusRateLimited:
+		return "↻", "\x1b[33m"
 	case check.StatusError:
 		return "✕", "\x1b[31m"
 	case check.StatusSkipped, check.StatusCanceled:

@@ -428,6 +428,12 @@ func (m *model) statsLine(w int) string {
 		plain(check.StatusTaken, m.counts[check.StatusTaken], "taken"),
 		plain(check.StatusUnknown, m.counts[check.StatusUnknown], "unknown"),
 	}
+	if n := m.counts[check.StatusTimeout]; n > 0 {
+		parts = append(parts, plain(check.StatusTimeout, n, "timeout"))
+	}
+	if n := m.counts[check.StatusRateLimited]; n > 0 {
+		parts = append(parts, plain(check.StatusRateLimited, n, "rate limited"))
+	}
 	if inFlight > 0 {
 		parts = append(parts, m.theme.style(m.theme.accent).Render("◐ ")+
 			m.theme.style(m.theme.text).Render(fmt.Sprintf("%d", inFlight))+" "+

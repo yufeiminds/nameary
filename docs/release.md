@@ -63,7 +63,7 @@ no animation.
   "name": "acme",
   "target": "npm",
   "label": "acme",
-  "status": "available|taken|unknown|error|skipped|canceled",
+  "status": "available|taken|unknown|timeout|rate_limit|error|skipped|canceled",
   "confidence": "certain|likely|low",
   "query": "acme",
   "summary": "v3.0.3",
@@ -89,7 +89,7 @@ not assume that `fields` is ordered across versions.
 
 - `available` means “no record was found”, not “registrable”.
 - Domain availability is not a trademark, price, or legal guarantee.
-- A timeout, rate limit, or server error is reported as `unknown`.
+- A timeout is reported as `timeout`, a rate limit as `rate_limit`, and a server error as `unknown`.
 - See [`sources.md`](sources.md) for per-source behavior.
 
 ## Verifying a release

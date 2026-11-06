@@ -31,7 +31,7 @@ signed/notarized.
 **Evidence**
 
 - Adapters return `available` only on an explicit 404 / empty registry record.
-- Timeouts, 429, parse errors and 5xx map to `unknown`/`error`.
+- Timeouts map to `timeout`, 429 to `rate_limit`, and parse errors or 5xx to `unknown`/`error`.
 - Domain checks use RDAP before claiming availability; WHOIS gaps return
   `unknown`.
 - Smoke tests include known-taken packages for every target.

@@ -51,7 +51,7 @@ func TestTimeoutIsNotRetried(t *testing.T) {
 	if calls != 1 {
 		t.Fatalf("calls=%d", calls)
 	}
-	if res.Status != check.StatusUnknown {
+	if res.Status != check.StatusTimeout {
 		t.Fatalf("status=%v", res.Status)
 	}
 }
