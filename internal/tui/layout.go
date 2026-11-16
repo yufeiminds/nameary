@@ -26,9 +26,15 @@ func (m *model) matches(r *row) bool {
 }
 
 func (m *model) rebuildItems() {
-	selected := -1
-	if m.cursor >= 0 && m.cursor < len(m.items) && m.items[m.cursor].kind == itemRow {
-		selected = m.items[m.cursor].row
+	selected, selectedProject := -1, -1
+	if m.cursor >= 0 && m.cursor < len(m.items) {
+		it := m.items[m.cursor]
+		if it.kind == itemRow || it.kind == itemProject {
+			selected = it.row
+			if it.kind == itemProject {
+				selectedProject = it.project
+			}
+		}
 	}
 
 	var groups []check.Category
@@ -63,7 +69,18 @@ func (m *model) rebuildItems() {
 		m.sortRows(visible)
 		items = append(items, item{kind: itemHeader, group: g, total: total, settled: settled})
 		for _, idx := range visible {
+			r := m.rows[idx]
 			items = append(items, item{kind: itemRow, group: g, row: idx})
+			if r.status != check.StatusConflict || len(r.result.Projects) == 0 {
+				continue
+			}
+			limit := min(len(r.result.Projects), 5)
+			for pi := 0; pi < limit; pi++ {
+				items = append(items, item{kind: itemProject, group: g, row: idx, project: pi})
+			}
+			if len(r.result.Projects) > limit {
+				items = append(items, item{kind: itemProject, group: g, row: idx, project: -1, total: len(r.result.Projects) - limit})
+			}
 		}
 	}
 
@@ -71,7 +88,14 @@ func (m *model) rebuildItems() {
 	cursor := -1
 	if selected >= 0 {
 		for i, it := range items {
-			if it.kind == itemRow && it.row == selected {
+			if it.row != selected {
+				continue
+			}
+			if selectedProject < 0 && it.kind == itemRow {
+				cursor = i
+				break
+			}
+			if selectedProject >= 0 && it.kind == itemProject && it.project == selectedProject {
 				cursor = i
 				break
 			}
@@ -196,7 +220,7 @@ func (m *model) move(delta int) {
 	}
 	i := m.cursor + delta
 	for i >= 0 && i < len(m.items) {
-		if m.items[i].kind == itemRow {
+		if m.items[i].kind != itemHeader {
 			m.cursor = i
 			m.clampOffset()
 			return
@@ -212,7 +236,7 @@ func (m *model) moveTo(top bool) {
 		return
 	}
 	for i := len(m.items) - 1; i >= 0; i-- {
-		if m.items[i].kind == itemRow {
+		if m.items[i].kind != itemHeader {
 			m.cursor = i
 			m.clampOffset()
 			return

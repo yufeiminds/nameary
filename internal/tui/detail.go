@@ -96,6 +96,31 @@ func (m *model) detailContent(r *row, width int) string {
 		b.WriteString("\n\n")
 	}
 
+	if len(r.result.Projects) > 0 {
+		b.WriteString(m.theme.bold(m.theme.accent).Render("GitHub projects"))
+		b.WriteString("\n")
+		for _, p := range r.result.Projects {
+			line := "  " + m.theme.bold(m.theme.text).Render(textutil.Clean(p.FullName)) +
+				m.theme.style(m.theme.muted).Render("  ★"+formatStars(p.Stars))
+			if p.Language != "" {
+				line += m.theme.style(m.theme.dim).Render("  " + textutil.Clean(p.Language))
+			}
+			if p.Archived {
+				line += m.theme.style(m.theme.amber).Render("  [archived]")
+			}
+			if p.Fork {
+				line += m.theme.style(m.theme.dim).Render("  [fork]")
+			}
+			b.WriteString(line)
+			b.WriteString("\n")
+			if p.Description != "" {
+				b.WriteString(m.theme.style(m.theme.muted).Render(wrapText(textutil.Clean(p.Description), max(10, width-4))))
+				b.WriteString("\n")
+			}
+		}
+		b.WriteString("\n")
+	}
+
 	fields := r.result.Fields
 	if len(fields) == 0 {
 		b.WriteString(m.theme.style(m.theme.muted).Render("No metadata returned."))

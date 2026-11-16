@@ -132,6 +132,17 @@ type Field struct {
 	Value string `json:"value"`
 }
 
+// Project is a list-valued result, currently used by the GitHub project search.
+type Project struct {
+	FullName    string `json:"full_name"`
+	Stars       int64  `json:"stars"`
+	Language    string `json:"language,omitempty"`
+	Description string `json:"description,omitempty"`
+	URL         string `json:"url,omitempty"`
+	Fork        bool   `json:"fork,omitempty"`
+	Archived    bool   `json:"archived,omitempty"`
+}
+
 // Result is the outcome of one check. It is deliberately richer than a bool:
 // a timeout, a rate limit and a 404 are three different things.
 type Result struct {
@@ -140,6 +151,7 @@ type Result struct {
 	Query      string        `json:"query"`
 	Summary    string        `json:"summary,omitempty"`
 	Fields     []Field       `json:"fields,omitempty"`
+	Projects   []Project     `json:"projects,omitempty"`
 	SourceURL  string        `json:"source_url,omitempty"`
 	FetchedAt  time.Time     `json:"fetched_at"`
 	Latency    time.Duration `json:"latency"`

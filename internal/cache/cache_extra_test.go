@@ -21,6 +21,7 @@ func TestDefaultPath(t *testing.T) {
 }
 
 func TestOpenDefaultAndNilStore(t *testing.T) {
+	t.Setenv("HOME", t.TempDir())
 	var nilStore *Store
 	if _, ok := nilStore.Get(check.TargetNPM, "x"); ok {
 		t.Fatal("nil store returned a hit")

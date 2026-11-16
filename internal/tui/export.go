@@ -15,18 +15,19 @@ import (
 )
 
 type exportRecord struct {
-	Name       string        `json:"name"`
-	Target     string        `json:"target"`
-	Label      string        `json:"label"`
-	Status     string        `json:"status"`
-	Confidence string        `json:"confidence"`
-	Query      string        `json:"query"`
-	Summary    string        `json:"summary,omitempty"`
-	URL        string        `json:"source_url,omitempty"`
-	LatencyMS  int64         `json:"latency_ms"`
-	Cached     bool          `json:"cached,omitempty"`
-	Error      string        `json:"error,omitempty"`
-	Fields     []check.Field `json:"fields,omitempty"`
+	Name       string          `json:"name"`
+	Target     string          `json:"target"`
+	Label      string          `json:"label"`
+	Status     string          `json:"status"`
+	Confidence string          `json:"confidence"`
+	Query      string          `json:"query"`
+	Summary    string          `json:"summary,omitempty"`
+	URL        string          `json:"source_url,omitempty"`
+	LatencyMS  int64           `json:"latency_ms"`
+	Cached     bool            `json:"cached,omitempty"`
+	Error      string          `json:"error,omitempty"`
+	Fields     []check.Field   `json:"fields,omitempty"`
+	Projects   []check.Project `json:"projects,omitempty"`
 }
 
 func (m *model) records() []exportRecord {
@@ -49,6 +50,7 @@ func (m *model) records() []exportRecord {
 			Cached:     r.result.Cached,
 			Error:      errText,
 			Fields:     r.result.Fields,
+			Projects:   r.result.Projects,
 		})
 	}
 	return out

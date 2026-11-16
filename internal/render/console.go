@@ -137,7 +137,7 @@ func RunConsole(events <-chan engine.Event, jobs []engine.Job, opts ConsoleOptio
 		name = jobs[0].Raw
 	}
 
-	if opts.Live && !opts.OnlyAvailable {
+	if opts.Live && !opts.OnlyAvailable && !hasProjectSearch(jobs) {
 		if cols, blockH, ok := consoleLayout(jobs, opts.Width, opts.Height, p, opts.ASCII); ok {
 			return runConsoleBlock(events, jobs, opts, p, start, cols, blockH)
 		}
@@ -242,6 +242,15 @@ func RunConsole(events <-chan engine.Event, jobs []engine.Job, opts ConsoleOptio
 	}
 	fmt.Fprint(opts.Out, consoleSummary(res, p, opts.ASCII, opts.Celebrate, opts.Width))
 	return res, nil
+}
+
+func hasProjectSearch(jobs []engine.Job) bool {
+	for _, j := range jobs {
+		if j.Target == check.TargetGitHubRepos {
+			return true
+		}
+	}
+	return false
 }
 
 func runConsoleBlock(events <-chan engine.Event, jobs []engine.Job, opts ConsoleOptions, p consolePalette, start time.Time, cols, blockH int) (Result, error) {
@@ -569,6 +578,15 @@ func consoleGroupLines(jobs []engine.Job, results map[string]check.Result, cat c
 			r = check.Result{Status: st, Query: j.Query}
 		}
 		rows = append(rows, consoleRow(j, r, width, p, ascii))
+		if r.Status == check.StatusConflict && len(r.Projects) > 0 {
+			limit := min(len(r.Projects), 5)
+			for i := 0; i < limit; i++ {
+				rows = append(rows, consoleProjectLine(r.Projects[i], width, p, ascii))
+			}
+			if len(r.Projects) > limit {
+				rows = append(rows, "      "+p.style(p.dim).Render(fmt.Sprintf("+%d more", len(r.Projects)-limit)))
+			}
+		}
 	}
 	if len(rows) == 0 {
 		return nil
@@ -578,6 +596,46 @@ func consoleGroupLines(jobs []engine.Job, results map[string]check.Result, cat c
 	lines := []string{joinLR(left, right, width)}
 	lines = append(lines, rows...)
 	return lines
+}
+
+func consoleProjectLine(project check.Project, width int, p consolePalette, ascii bool) string {
+	mark := "↳"
+	star := "★"
+	if ascii {
+		mark = "+"
+		star = "*"
+	}
+	name := textutil.Clean(project.FullName)
+	lang := textutil.Clean(project.Language)
+	desc := textutil.Clean(project.Description)
+	flags := ""
+	if project.Archived {
+		flags += " [archived]"
+	}
+	if project.Fork {
+		flags += " [fork]"
+	}
+	line := "      " + p.style(p.accent).Render(mark) + " " +
+		p.style(p.text).Render(name) + "  " +
+		p.style(p.amber).Render(star+renderStars(project.Stars)) + "  " +
+		p.style(p.dim).Render(lang) + flags
+	if desc != "" {
+		line += "  " + p.style(p.muted).Render(desc)
+	}
+	return ansi.Truncate(line, width, "…")
+}
+
+func renderStars(n int64) string {
+	switch {
+	case n >= 1_000_000_000:
+		return fmt.Sprintf("%.1fB", float64(n)/1_000_000_000)
+	case n >= 1_000_000:
+		return fmt.Sprintf("%.1fM", float64(n)/1_000_000)
+	case n >= 1_000:
+		return fmt.Sprintf("%.1fk", float64(n)/1_000)
+	default:
+		return fmt.Sprintf("%d", n)
+	}
 }
 
 func consoleRow(job engine.Job, r check.Result, width int, p consolePalette, ascii bool) string {

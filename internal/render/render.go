@@ -32,18 +32,19 @@ type Result struct {
 
 // Record is the stable JSON shape.
 type Record struct {
-	Name       string        `json:"name"`
-	Target     string        `json:"target"`
-	Label      string        `json:"label"`
-	Status     string        `json:"status"`
-	Confidence string        `json:"confidence"`
-	Query      string        `json:"query"`
-	Summary    string        `json:"summary,omitempty"`
-	URL        string        `json:"url,omitempty"`
-	LatencyMS  int64         `json:"latency_ms"`
-	Cached     bool          `json:"cached,omitempty"`
-	Error      string        `json:"error,omitempty"`
-	Fields     []check.Field `json:"fields,omitempty"`
+	Name       string          `json:"name"`
+	Target     string          `json:"target"`
+	Label      string          `json:"label"`
+	Status     string          `json:"status"`
+	Confidence string          `json:"confidence"`
+	Query      string          `json:"query"`
+	Summary    string          `json:"summary,omitempty"`
+	URL        string          `json:"url,omitempty"`
+	LatencyMS  int64           `json:"latency_ms"`
+	Cached     bool            `json:"cached,omitempty"`
+	Error      string          `json:"error,omitempty"`
+	Fields     []check.Field   `json:"fields,omitempty"`
+	Projects   []check.Project `json:"projects,omitempty"`
 }
 
 // Run consumes engine events and writes them in the requested format.
@@ -122,6 +123,7 @@ func recordOf(ev engine.Event) Record {
 		Cached:     ev.Result.Cached,
 		Error:      errText,
 		Fields:     ev.Result.Fields,
+		Projects:   ev.Result.Projects,
 	}
 }
 

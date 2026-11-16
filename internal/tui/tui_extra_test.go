@@ -932,8 +932,9 @@ func TestWideViewListsConflicts(t *testing.T) {
 		status: check.StatusConflict,
 		result: check.Result{
 			Status: check.StatusConflict,
-			Fields: []check.Field{
-				{Key: "conflicts", Value: "google-deepmind/acme (4.1k stars); other/acme (1.2k stars)"},
+			Projects: []check.Project{
+				{FullName: "google-deepmind/acme", Stars: 4100, Language: "Go", Description: "DeepMind's Acme RL library"},
+				{FullName: "other/acme", Stars: 1200, Language: "Python", Description: "Acme toolkit"},
 			},
 		},
 	})
@@ -945,5 +946,29 @@ func TestWideViewListsConflicts(t *testing.T) {
 		if !strings.Contains(content, want) {
 			t.Fatalf("missing %q in sidebar: %s", want, content)
 		}
+	}
+}
+
+func TestProjectSubrows(t *testing.T) {
+	m := testModelWithRows()
+	m.width, m.height = 120, 30
+	m.rows = append(m.rows, &row{
+		job: engine.Job{
+			ID: "3", TargetLabel: "github-repos", Category: check.CategoryHandles,
+			Label: "acme", Raw: "acme", Query: "acme",
+		},
+		status: check.StatusConflict,
+		result: check.Result{
+			Status: check.StatusConflict,
+			Projects: []check.Project{
+				{FullName: "google-deepmind/acme", Stars: 4100, Language: "Go", Description: "DeepMind's Acme RL library"},
+			},
+		},
+	})
+	m.byID["3"] = len(m.rows) - 1
+	m.rebuildItems()
+	lines := strings.Join(m.listLines(75), "\n")
+	if !strings.Contains(lines, "google-deepmind/acme") || !strings.Contains(lines, "4.1k") {
+		t.Fatalf("missing project subrow:\n%s", lines)
 	}
 }

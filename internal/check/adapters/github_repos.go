@@ -148,59 +148,33 @@ func (g *GitHubRepos) Check(ctx context.Context, q string) (check.Result, error)
 		}, nil
 	}
 
-	top := matches[0]
-	fields := []check.Field{
-		{Key: "conflicts", Value: conflictList(matches, 10)},
-		{Key: "top_project", Value: top.FullName},
-		{Key: "stars", Value: humanCount(top.Stars)},
-		{Key: "threshold", Value: fmt.Sprintf("%d stars", g.minStars)},
-		{Key: "matches", Value: fmt.Sprintf("%d", len(matches))},
-		{Key: "url", Value: top.HTMLURL},
-		{Key: "language", Value: top.Language},
-		{Key: "fork", Value: fmt.Sprintf("%t", top.Fork)},
-		{Key: "archived", Value: fmt.Sprintf("%t", top.Archived)},
+	projects := make([]check.Project, 0, len(matches))
+	for _, m := range matches {
+		projects = append(projects, check.Project{
+			FullName:    m.FullName,
+			Stars:       m.Stars,
+			Language:    m.Language,
+			Description: m.Description,
+			URL:         m.HTMLURL,
+			Fork:        m.Fork,
+			Archived:    m.Archived,
+		})
 	}
-	if top.Description != "" {
-		fields = append(fields, check.Field{Key: "description", Value: top.Description})
-	}
-	if top.UpdatedAt != "" {
-		fields = append(fields, check.Field{Key: "updated", Value: top.UpdatedAt})
+	plural := "projects"
+	if len(projects) == 1 {
+		plural = "project"
 	}
 	return check.Result{
 		Status:     check.StatusConflict,
 		Confidence: check.Certain,
 		Query:      q,
-		Summary:    conflictSummary(matches),
-		SourceURL:  top.HTMLURL,
+		Summary:    fmt.Sprintf("%d %s ≥ %s stars", len(projects), plural, humanCount(int64(g.minStars))),
+		SourceURL:  projects[0].URL,
 		FetchedAt:  time.Now(),
-		Fields:     fields,
+		Projects:   projects,
+		Fields: []check.Field{
+			{Key: "threshold", Value: fmt.Sprintf("%d stars", g.minStars)},
+			{Key: "matches", Value: fmt.Sprintf("%d", len(projects))},
+		},
 	}, nil
-}
-
-// conflictSummary keeps the top projects visible in one-line table and row
-// summaries, while the detail fields carry the full conflict list.
-func conflictSummary(matches []githubRepo) string {
-	const shown = 3
-	parts := make([]string, 0, shown+1)
-	for i := 0; i < len(matches) && i < shown; i++ {
-		parts = append(parts, fmt.Sprintf("%s (%s stars)", matches[i].FullName, humanCount(matches[i].Stars)))
-	}
-	if len(matches) > shown {
-		parts = append(parts, fmt.Sprintf("+%d more", len(matches)-shown))
-	}
-	return strings.Join(parts, ", ")
-}
-
-func conflictList(matches []githubRepo, limit int) string {
-	if limit <= 0 || limit > len(matches) {
-		limit = len(matches)
-	}
-	parts := make([]string, 0, limit+1)
-	for i := 0; i < limit; i++ {
-		parts = append(parts, fmt.Sprintf("%s (%s stars)", matches[i].FullName, humanCount(matches[i].Stars)))
-	}
-	if len(matches) > limit {
-		parts = append(parts, fmt.Sprintf("+%d more", len(matches)-limit))
-	}
-	return strings.Join(parts, "; ")
 }

@@ -58,12 +58,14 @@ type itemKind int
 const (
 	itemHeader itemKind = iota
 	itemRow
+	itemProject
 )
 
 type item struct {
 	kind    itemKind
 	group   check.Category
 	row     int
+	project int
 	total   int
 	settled int
 }
@@ -331,9 +333,24 @@ func (m *model) currentRow() *row {
 	return m.rows[it.row]
 }
 
+func (m *model) currentProject() (*row, *check.Project) {
+	if m.cursor < 0 || m.cursor >= len(m.items) {
+		return nil, nil
+	}
+	it := m.items[m.cursor]
+	if it.kind != itemProject || it.project < 0 || it.row < 0 || it.row >= len(m.rows) {
+		return nil, nil
+	}
+	r := m.rows[it.row]
+	if it.project >= len(r.result.Projects) {
+		return nil, nil
+	}
+	return r, &r.result.Projects[it.project]
+}
+
 func firstRow(items []item) int {
 	for i, it := range items {
-		if it.kind == itemRow {
+		if it.kind != itemHeader {
 			return i
 		}
 	}

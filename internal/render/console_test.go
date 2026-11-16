@@ -133,3 +133,47 @@ func TestConsoleSanitizesUntrustedText(t *testing.T) {
 		t.Fatalf("terminal escape survived: %q", out.String())
 	}
 }
+
+func TestConsoleConflictProjects(t *testing.T) {
+	jobs := []engine.Job{{
+		ID: "gh", Target: check.TargetGitHubRepos, TargetLabel: "github-repos",
+		Category: check.CategoryHandles, Label: "acme", Raw: "acme", Query: "acme",
+	}}
+	results := map[string]check.Result{
+		"gh": {
+			Status:  check.StatusConflict,
+			Summary: "2 projects ≥ 1.0k stars",
+			Projects: []check.Project{
+				{FullName: "google-deepmind/acme", Stars: 4100, Language: "Go", Description: "DeepMind's Acme RL library"},
+				{FullName: "other/acme", Stars: 1200, Language: "Python", Description: "Acme toolkit"},
+			},
+		},
+	}
+	lines := consoleGroupLines(jobs, results, check.CategoryHandles, 120, newConsolePalette(true, false), true, false)
+	text := strings.Join(lines, "\n")
+	for _, want := range []string{"google-deepmind/acme", "other/acme", "DeepMind's Acme RL library", "Python"} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing %q:\n%s", want, text)
+		}
+	}
+}
+
+func TestConsoleLiveConflictProjects(t *testing.T) {
+	jobs := []engine.Job{{
+		ID: "gh", Target: check.TargetGitHubRepos, TargetLabel: "github-repos",
+		Category: check.CategoryHandles, Label: "acme", Raw: "acme", Query: "acme",
+	}}
+	ch := make(chan engine.Event, 1)
+	ch <- engine.Event{Kind: engine.EventSettled, Job: jobs[0], Result: check.Result{
+		Status: check.StatusConflict, Summary: "1 project ≥ 1.0k stars",
+		Projects: []check.Project{{FullName: "google-deepmind/acme", Stars: 4100, Language: "Go", Description: "DeepMind's Acme RL library"}},
+	}}
+	close(ch)
+	var out bytes.Buffer
+	if _, err := RunConsole(ch, jobs, ConsoleOptions{NoColor: true, ASCII: true, Width: 120, Height: 40, Live: true, Out: &out}); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(out.String(), "google-deepmind/acme") {
+		t.Fatalf("missing project line:\n%s", out.String())
+	}
+}

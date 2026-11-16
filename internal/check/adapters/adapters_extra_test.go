@@ -289,14 +289,14 @@ func TestGitHubReposConflict(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if res.Status != check.StatusConflict || res.Summary != "mock/acme (4.2k stars), second/acme (1.2k stars)" {
+	if res.Status != check.StatusConflict || res.Summary != "2 projects ≥ 1.0k stars" {
 		t.Fatalf("res=%+v", res)
 	}
-	if res.Field("top_project") != "mock/acme" || res.Field("matches") != "2" {
-		t.Fatalf("fields=%+v", res.Fields)
+	if len(res.Projects) != 2 || res.Projects[0].FullName != "mock/acme" || res.Projects[1].FullName != "second/acme" {
+		t.Fatalf("projects=%+v", res.Projects)
 	}
-	if !strings.Contains(res.Field("conflicts"), "second/acme (1.2k stars)") {
-		t.Fatalf("conflicts=%q", res.Field("conflicts"))
+	if res.Projects[0].Stars != 4200 || res.Projects[0].Language != "Go" {
+		t.Fatalf("top project=%+v", res.Projects[0])
 	}
 	if !strings.Contains(query, `"acme" in:name`) || !strings.Contains(query, "stars:>=1000") {
 		t.Fatalf("query=%q", query)

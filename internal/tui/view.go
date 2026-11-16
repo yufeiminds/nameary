@@ -305,6 +305,11 @@ func (m *model) sideLines(w int) []string {
 	}
 	r := m.currentRow()
 	if r == nil {
+		if pr, _ := m.currentProject(); pr != nil {
+			r = pr
+		}
+	}
+	if r == nil {
 		lines = append(lines, m.theme.style(m.theme.dim).Render("move the cursor over a result"))
 	} else {
 		status := r.status
@@ -359,11 +364,12 @@ func (m *model) sideLines(w int) []string {
 				lines = append(lines,
 					m.theme.style(m.theme.amber).Render(m.theme.glyph(check.StatusConflict, "")+" ")+
 						m.theme.style(m.theme.text).Render(truncateText(label, max(6, w-2))))
-				for _, project := range strings.Split(row.result.Field("conflicts"), "; ") {
-					if project == "" || len(lines) >= h {
+				for i, project := range row.result.Projects {
+					if i >= 5 || len(lines) >= h {
 						break
 					}
-					lines = append(lines, "  "+m.theme.style(m.theme.muted).Render(truncateText(project, max(6, w-4))))
+					text := fmt.Sprintf("%s (%s stars)", textutil.Clean(project.FullName), formatStars(project.Stars))
+					lines = append(lines, "  "+m.theme.style(m.theme.muted).Render(truncateText(text, max(6, w-4))))
 				}
 			}
 		}
@@ -491,9 +497,15 @@ func (m *model) listLines(w int) []string {
 				lines = append(lines, m.groupLine(it, w))
 				continue
 			}
-			if it.row >= 0 && it.row < len(m.rows) {
-				lines = append(lines, m.rowLine(m.rows[it.row], w, m.offset+len(lines) == m.cursor))
+			if it.row < 0 || it.row >= len(m.rows) {
+				continue
 			}
+			selected := m.offset+len(lines) == m.cursor
+			if it.kind == itemProject {
+				lines = append(lines, m.projectLine(m.rows[it.row], it.project, it.total, w, selected))
+				continue
+			}
+			lines = append(lines, m.rowLine(m.rows[it.row], w, selected))
 		}
 	}
 	if len(lines) > m.listHeight() {
@@ -577,6 +589,70 @@ func (m *model) rowLine(r *row, w int, selected bool) string {
 		parts = append(parts, m.theme.style(m.theme.dim).Render(link))
 	}
 	return fit(strings.Join(parts, " "), w)
+}
+
+func (m *model) projectLine(r *row, project, more, w int, selected bool) string {
+	cursor := " "
+	if selected {
+		cursor = m.theme.style(m.theme.accent).Render("▌")
+		if m.opts.ASCII {
+			cursor = m.theme.style(m.theme.accent).Render(">")
+		}
+	}
+	if project < 0 {
+		return fit(cursor+"      "+m.theme.style(m.theme.dim).Render(fmt.Sprintf("+%d more", more)), w)
+	}
+	if project >= len(r.result.Projects) {
+		return fit("", w)
+	}
+	p := r.result.Projects[project]
+	glyph := "↳"
+	if m.opts.ASCII {
+		glyph = "+"
+	}
+	name := textutil.Clean(p.FullName)
+	nameW := min(30, max(12, w/3))
+	if len(name) > nameW {
+		name = ansi.Truncate(name, nameW, m.theme.ellipsis())
+	}
+	nameStyle := m.theme.style(m.theme.text)
+	if selected {
+		nameStyle = m.theme.bold(m.theme.text)
+	}
+	star := "★"
+	if m.opts.ASCII {
+		star = "*"
+	}
+	meta := m.theme.style(m.theme.muted).Render(fmt.Sprintf("%s%s", star, formatStars(p.Stars)))
+	if p.Language != "" {
+		meta += "  " + m.theme.style(m.theme.dim).Render(textutil.Clean(p.Language))
+	}
+	flags := ""
+	if p.Archived {
+		flags += " [archived]"
+	}
+	if p.Fork {
+		flags += " [fork]"
+	}
+	line := cursor + "    " + m.theme.style(m.theme.amber).Render(glyph) + " " +
+		nameStyle.Render(padPlain(name, nameW)) + "  " + meta + flags
+	if desc := textutil.Clean(p.Description); desc != "" {
+		line += "  " + m.theme.style(m.theme.muted).Render(desc)
+	}
+	return fit(line, w)
+}
+
+func formatStars(n int64) string {
+	switch {
+	case n >= 1_000_000_000:
+		return fmt.Sprintf("%.1fB", float64(n)/1_000_000_000)
+	case n >= 1_000_000:
+		return fmt.Sprintf("%.1fM", float64(n)/1_000_000)
+	case n >= 1_000:
+		return fmt.Sprintf("%.1fk", float64(n)/1_000)
+	default:
+		return fmt.Sprintf("%d", n)
+	}
 }
 
 func (m *model) statusMeta(r *row) string {

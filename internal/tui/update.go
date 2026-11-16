@@ -109,7 +109,7 @@ func (m *model) handleEvent(ev engine.Event) tea.Cmd {
 	if m.detail != nil && m.detail.row == idx {
 		m.reopenDetail()
 	}
-	if m.filterOn || m.onlyAvailable || m.sortMode != sortGroup {
+	if m.filterOn || m.onlyAvailable || m.sortMode != sortGroup || r.status == check.StatusConflict {
 		m.rebuildItems()
 	}
 	pct := m.progressRatio()
@@ -267,6 +267,9 @@ func (m *model) handleKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	case "G", "end":
 		m.moveTo(false)
 	case "enter":
+		if r, _ := m.currentProject(); r != nil {
+			return m, m.openDetail(m.items[m.cursor].row)
+		}
 		if r := m.currentRow(); r != nil {
 			idx := m.items[m.cursor].row
 			return m, m.openDetail(idx)
@@ -319,14 +322,14 @@ func (m *model) nextGroup() {
 		idx := (start + i) % len(m.items)
 		if m.items[idx].kind == itemHeader {
 			for j := idx + 1; j < len(m.items); j++ {
-				if m.items[j].kind == itemRow {
+				if m.items[j].kind != itemHeader {
 					m.cursor = j
 					m.clampOffset()
 					return
 				}
 			}
 			for j := 0; j < idx; j++ {
-				if m.items[j].kind == itemRow {
+				if m.items[j].kind != itemHeader {
 					m.cursor = j
 					m.clampOffset()
 					return
@@ -337,6 +340,13 @@ func (m *model) nextGroup() {
 }
 
 func (m *model) copyCurrent() tea.Cmd {
+	if _, p := m.currentProject(); p != nil {
+		text := textutil.Clean(p.FullName)
+		if u, ok := safeExternalURL(p.URL); ok {
+			text = u
+		}
+		return tea.Batch(tea.SetClipboard(text), m.setToast("copied "+text))
+	}
 	r := m.currentRow()
 	if r == nil {
 		return nil
@@ -350,6 +360,13 @@ func (m *model) copyCurrent() tea.Cmd {
 }
 
 func (m *model) openCurrent() tea.Cmd {
+	if _, p := m.currentProject(); p != nil {
+		u, ok := safeExternalURL(p.URL)
+		if !ok {
+			return m.setToast("refusing to open a non-http(s) URL")
+		}
+		return tea.Batch(openURL(u), m.setToast("opening browser"))
+	}
 	r := m.currentRow()
 	if r == nil || r.result.SourceURL == "" {
 		return m.setToast("no source URL for this result")

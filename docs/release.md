@@ -70,10 +70,22 @@ no animation.
   "url": "https://www.npmjs.com/package/acme",
   "latency_ms": 312,
   "cached": false,
-  "fields": [{"key": "registry", "value": "npm"}]
+  "fields": [{"key": "registry", "value": "npm"}],
+  "projects": [
+    {
+      "full_name": "google-deepmind/acme",
+      "stars": 4100,
+      "language": "Go",
+      "description": "DeepMind's Acme RL library",
+      "url": "https://github.com/google-deepmind/acme",
+      "fork": false,
+      "archived": false
+    }
+  ]
 }
 ```
 
+`projects` is populated only by list-valued checks such as `github-repos`.
 Fields may be added in any release. Consumers should ignore unknown keys and
 not assume that `fields` is ordered across versions.
 

@@ -407,7 +407,9 @@ nameary acme --targets all,github-repos --github-min-stars 500
 ```
 
 It searches repository names, filters exact matches, and reports a `conflict`
-when an exact-name repository meets the star threshold. It does not affect
+when an exact-name repository meets the star threshold. The TUI expands the
+conflict into project rows with stars, language and description; JSON/NDJSON
+carry the same list in the `projects` field. It does not affect
 `--fail-if-taken`. Set `GITHUB_TOKEN` for reliable search quota.
 
 ## Development
