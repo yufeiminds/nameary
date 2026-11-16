@@ -920,3 +920,30 @@ func TestTickIfNeeded(t *testing.T) {
 		t.Fatal("reduced motion should not tick")
 	}
 }
+
+func TestWideViewListsConflicts(t *testing.T) {
+	m := testModelWithRows()
+	m.width, m.height = 120, 30
+	m.rows = append(m.rows, &row{
+		job: engine.Job{
+			ID: "3", TargetLabel: "github-repos", Category: check.CategoryHandles,
+			Label: "acme", Raw: "acme", Query: "acme",
+		},
+		status: check.StatusConflict,
+		result: check.Result{
+			Status: check.StatusConflict,
+			Fields: []check.Field{
+				{Key: "conflicts", Value: "google-deepmind/acme (4.1k stars); other/acme (1.2k stars)"},
+			},
+		},
+	})
+	m.byID["3"] = len(m.rows) - 1
+	m.counts[check.StatusConflict] = 1
+	m.rebuildItems()
+	content := m.View().Content
+	for _, want := range []string{"CONFLICTS", "google-deepmind/acme", "other/acme"} {
+		if !strings.Contains(content, want) {
+			t.Fatalf("missing %q in sidebar: %s", want, content)
+		}
+	}
+}

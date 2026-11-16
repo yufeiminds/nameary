@@ -341,6 +341,35 @@ func (m *model) sideLines(w int) []string {
 	}
 
 	if len(lines) < h-2 {
+		selected := m.currentRow()
+		var conflicts []*row
+		for _, row := range m.rows {
+			if row.status == check.StatusConflict && row != selected {
+				conflicts = append(conflicts, row)
+			}
+		}
+		if len(conflicts) > 0 {
+			lines = append(lines, "")
+			lines = append(lines, m.theme.bold(m.theme.accent).Render("CONFLICTS"))
+			for _, row := range conflicts {
+				if len(lines) >= h {
+					break
+				}
+				label := textutil.Clean(row.job.TargetLabel)
+				lines = append(lines,
+					m.theme.style(m.theme.amber).Render(m.theme.glyph(check.StatusConflict, "")+" ")+
+						m.theme.style(m.theme.text).Render(truncateText(label, max(6, w-2))))
+				for _, project := range strings.Split(row.result.Field("conflicts"), "; ") {
+					if project == "" || len(lines) >= h {
+						break
+					}
+					lines = append(lines, "  "+m.theme.style(m.theme.muted).Render(truncateText(project, max(6, w-4))))
+				}
+			}
+		}
+	}
+
+	if len(lines) < h-2 {
 		lines = append(lines, "")
 		lines = append(lines, m.theme.bold(m.theme.accent).Render("AVAILABLE"))
 		var available []*row
