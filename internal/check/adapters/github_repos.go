@@ -36,7 +36,7 @@ func NewGitHubRepos(h *check.HTTP, apiBase, token string, minStars int) *GitHubR
 }
 
 func (g *GitHubRepos) Target() check.Target     { return check.TargetGitHubRepos }
-func (g *GitHubRepos) Label() string            { return "github-repos" }
+func (g *GitHubRepos) Label() string            { return "gh-repos" }
 func (g *GitHubRepos) Category() check.Category { return check.CategoryHandles }
 
 func (g *GitHubRepos) Policy() check.Policy {
@@ -113,7 +113,7 @@ func (g *GitHubRepos) Check(ctx context.Context, q string) (check.Result, error)
 
 	matches := make([]githubRepo, 0, len(payload.Items))
 	for _, item := range payload.Items {
-		if strings.EqualFold(item.Name, q) {
+		if strings.Contains(strings.ToLower(item.Name), q) {
 			matches = append(matches, item)
 		}
 	}
@@ -158,6 +158,7 @@ func (g *GitHubRepos) Check(ctx context.Context, q string) (check.Result, error)
 			URL:         m.HTMLURL,
 			Fork:        m.Fork,
 			Archived:    m.Archived,
+			Exact:       strings.EqualFold(m.Name, q),
 		})
 	}
 	plural := "projects"

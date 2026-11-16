@@ -609,6 +609,9 @@ func consoleProjectLine(project check.Project, width int, p consolePalette, asci
 	lang := textutil.Clean(project.Language)
 	desc := textutil.Clean(project.Description)
 	flags := ""
+	if project.Exact {
+		flags += " [exact]"
+	}
 	if project.Archived {
 		flags += " [archived]"
 	}

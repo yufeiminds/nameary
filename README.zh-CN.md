@@ -240,7 +240,7 @@ nameary acme --style plain
 | `hex` | hex.pm API | 404 |
 | `pub` | pub.dev API | 404 |
 | `github` | REST API 或公共主页 | 404 / 主页 404 |
-| `github-repos` | GitHub Search API（opt-in，包含在 `all`） | 没有超过 star 阈值的精确同名仓库 |
+| `github-repos` | GitHub Search API（opt-in，包含在 `all`） | 没有超过 star 阈值的名称匹配仓库 |
 | `maven` | Maven Central Solr 搜索 | 所有 group 中均无该 artifact ID |
 | `conda` | Anaconda 包搜索 | 各 channel 均无同名包 |
 | `cocoapods` | cocoapods.org/pods | 404 |
@@ -365,7 +365,7 @@ nameary acme --preset all
 nameary acme --targets all,github-repos --github-min-stars 500
 ```
 
-它搜索仓库名、筛选精确同名，并在达到 star 阈值时返回 `conflict`。TUI 会把冲突展开成项目子行，显示 stars、语言和描述；JSON/NDJSON 在 `projects` 字段中保留完整列表。它不影响 `--fail-if-taken`。建议设置 `GITHUB_TOKEN` 以获得可靠的搜索配额。
+它搜索名称中包含目标名称的仓库，并在达到 star 阈值时返回 `conflict`。精确同名项目会标记 `[exact]`；`acme.sh` 这类相关名称也会列出。TUI 会把冲突展开成项目子行，显示 stars、语言和描述；JSON/NDJSON 在 `projects` 字段中保留完整列表。它不影响 `--fail-if-taken`。建议设置 `GITHUB_TOKEN` 以获得可靠的搜索配额。
 
 ## 开发
 

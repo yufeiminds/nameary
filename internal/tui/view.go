@@ -664,6 +664,9 @@ func (m *model) projectLine(r *row, project, more, w int, selected bool) string 
 		meta += "  " + m.theme.style(m.theme.dim).Render(textutil.Clean(p.Language))
 	}
 	flags := ""
+	if p.Exact {
+		flags += " [exact]"
+	}
 	if p.Archived {
 		flags += " [archived]"
 	}

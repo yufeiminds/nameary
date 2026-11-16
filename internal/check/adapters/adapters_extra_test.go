@@ -279,7 +279,8 @@ func TestGitHubReposConflict(t *testing.T) {
 		_, _ = w.Write([]byte(`{"total_count":3,"incomplete_results":false,"items":[` +
 			`{"name":"other","full_name":"other/acme","stargazers_count":90000},` +
 			`{"name":"acme","full_name":"mock/acme","html_url":"https://github.com/mock/acme","description":"mock","language":"Go","stargazers_count":4200,"fork":false,"archived":false,"updated_at":"2026-01-02T00:00:00Z"},` +
-			`{"name":"acme","full_name":"second/acme","html_url":"https://github.com/second/acme","stargazers_count":1200}` +
+			`{"name":"acme","full_name":"second/acme","html_url":"https://github.com/second/acme","stargazers_count":1200},` +
+			`{"name":"acme-tools","full_name":"tools/acme-tools","html_url":"https://github.com/tools/acme-tools","stargazers_count":1100}` +
 			`]}`))
 	}))
 	defer srv.Close()
@@ -289,10 +290,10 @@ func TestGitHubReposConflict(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if res.Status != check.StatusConflict || res.Summary != "2 projects ≥ 1.0k stars" {
+	if res.Status != check.StatusConflict || res.Summary != "3 projects ≥ 1.0k stars" {
 		t.Fatalf("res=%+v", res)
 	}
-	if len(res.Projects) != 2 || res.Projects[0].FullName != "mock/acme" || res.Projects[1].FullName != "second/acme" {
+	if len(res.Projects) != 3 || res.Projects[0].FullName != "mock/acme" || res.Projects[1].FullName != "second/acme" || res.Projects[2].FullName != "tools/acme-tools" {
 		t.Fatalf("projects=%+v", res.Projects)
 	}
 	if res.Projects[0].Stars != 4200 || res.Projects[0].Language != "Go" {

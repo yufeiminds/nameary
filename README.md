@@ -267,7 +267,7 @@ nameary acme --style plain
 | `hex` | hex.pm API | 404 |
 | `pub` | pub.dev API | 404 |
 | `github` | REST API or public profile | 404 / profile page 404 |
-| `github-repos` | GitHub Search API (opt-in, `all` preset) | no exact same-name repository above the star threshold |
+| `github-repos` | GitHub Search API (opt-in, `all` preset) | no name-matching repository above the star threshold |
 | `maven` | Maven Central Solr search | artifact ID absent across all groups |
 | `conda` | Anaconda package search | no exact package name across channels |
 | `cocoapods` | cocoapods.org/pods | 404 |
@@ -406,10 +406,11 @@ nameary acme --preset all
 nameary acme --targets all,github-repos --github-min-stars 500
 ```
 
-It searches repository names, filters exact matches, and reports a `conflict`
-when an exact-name repository meets the star threshold. The TUI expands the
-conflict into project rows with stars, language and description; JSON/NDJSON
-carry the same list in the `projects` field. It does not affect
+It searches repositories whose names contain the requested name and reports a
+`conflict` when any result meets the star threshold. Exact-name matches are
+marked `[exact]`; related names such as `acme.sh` are listed too. The TUI
+expands the conflict into project rows with stars, language and description;
+JSON/NDJSON carry the same list in the `projects` field. It does not affect
 `--fail-if-taken`. Set `GITHUB_TOKEN` for reliable search quota.
 
 ## Development

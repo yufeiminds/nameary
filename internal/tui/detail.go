@@ -105,6 +105,9 @@ func (m *model) detailContent(r *row, width int) string {
 			if p.Language != "" {
 				line += m.theme.style(m.theme.dim).Render("  " + textutil.Clean(p.Language))
 			}
+			if p.Exact {
+				line += m.theme.style(m.theme.green).Render("  [exact]")
+			}
 			if p.Archived {
 				line += m.theme.style(m.theme.amber).Render("  [archived]")
 			}

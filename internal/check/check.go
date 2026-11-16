@@ -141,6 +141,7 @@ type Project struct {
 	URL         string `json:"url,omitempty"`
 	Fork        bool   `json:"fork,omitempty"`
 	Archived    bool   `json:"archived,omitempty"`
+	Exact       bool   `json:"exact,omitempty"`
 }
 
 // Result is the outcome of one check. It is deliberately richer than a bool:
