@@ -276,9 +276,10 @@ func TestGitHubReposConflict(t *testing.T) {
 			return
 		}
 		query = r.URL.Query().Get("q")
-		_, _ = w.Write([]byte(`{"total_count":2,"incomplete_results":false,"items":[` +
+		_, _ = w.Write([]byte(`{"total_count":3,"incomplete_results":false,"items":[` +
 			`{"name":"other","full_name":"other/acme","stargazers_count":90000},` +
-			`{"name":"acme","full_name":"mock/acme","html_url":"https://github.com/mock/acme","description":"mock","language":"Go","stargazers_count":4200,"fork":false,"archived":false,"updated_at":"2026-01-02T00:00:00Z"}` +
+			`{"name":"acme","full_name":"mock/acme","html_url":"https://github.com/mock/acme","description":"mock","language":"Go","stargazers_count":4200,"fork":false,"archived":false,"updated_at":"2026-01-02T00:00:00Z"},` +
+			`{"name":"acme","full_name":"second/acme","html_url":"https://github.com/second/acme","stargazers_count":1200}` +
 			`]}`))
 	}))
 	defer srv.Close()
@@ -288,11 +289,14 @@ func TestGitHubReposConflict(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if res.Status != check.StatusConflict || res.Summary != "mock/acme · 4.2k stars" {
+	if res.Status != check.StatusConflict || res.Summary != "mock/acme (4.2k stars), second/acme (1.2k stars)" {
 		t.Fatalf("res=%+v", res)
 	}
-	if res.Field("top_project") != "mock/acme" || res.Field("matches") != "1" {
+	if res.Field("top_project") != "mock/acme" || res.Field("matches") != "2" {
 		t.Fatalf("fields=%+v", res.Fields)
+	}
+	if !strings.Contains(res.Field("conflicts"), "second/acme (1.2k stars)") {
+		t.Fatalf("conflicts=%q", res.Field("conflicts"))
 	}
 	if !strings.Contains(query, `"acme" in:name`) || !strings.Contains(query, "stars:>=1000") {
 		t.Fatalf("query=%q", query)

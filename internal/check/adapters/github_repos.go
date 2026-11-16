@@ -150,6 +150,7 @@ func (g *GitHubRepos) Check(ctx context.Context, q string) (check.Result, error)
 
 	top := matches[0]
 	fields := []check.Field{
+		{Key: "conflicts", Value: conflictList(matches, 10)},
 		{Key: "top_project", Value: top.FullName},
 		{Key: "stars", Value: humanCount(top.Stars)},
 		{Key: "threshold", Value: fmt.Sprintf("%d stars", g.minStars)},
@@ -169,9 +170,37 @@ func (g *GitHubRepos) Check(ctx context.Context, q string) (check.Result, error)
 		Status:     check.StatusConflict,
 		Confidence: check.Certain,
 		Query:      q,
-		Summary:    top.FullName + " · " + humanCount(top.Stars) + " stars",
+		Summary:    conflictSummary(matches),
 		SourceURL:  top.HTMLURL,
 		FetchedAt:  time.Now(),
 		Fields:     fields,
 	}, nil
+}
+
+// conflictSummary keeps the top projects visible in one-line table and row
+// summaries, while the detail fields carry the full conflict list.
+func conflictSummary(matches []githubRepo) string {
+	const shown = 3
+	parts := make([]string, 0, shown+1)
+	for i := 0; i < len(matches) && i < shown; i++ {
+		parts = append(parts, fmt.Sprintf("%s (%s stars)", matches[i].FullName, humanCount(matches[i].Stars)))
+	}
+	if len(matches) > shown {
+		parts = append(parts, fmt.Sprintf("+%d more", len(matches)-shown))
+	}
+	return strings.Join(parts, ", ")
+}
+
+func conflictList(matches []githubRepo, limit int) string {
+	if limit <= 0 || limit > len(matches) {
+		limit = len(matches)
+	}
+	parts := make([]string, 0, limit+1)
+	for i := 0; i < limit; i++ {
+		parts = append(parts, fmt.Sprintf("%s (%s stars)", matches[i].FullName, humanCount(matches[i].Stars)))
+	}
+	if len(matches) > limit {
+		parts = append(parts, fmt.Sprintf("+%d more", len(matches)-limit))
+	}
+	return strings.Join(parts, "; ")
 }
