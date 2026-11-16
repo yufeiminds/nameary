@@ -58,6 +58,10 @@ func TestOpenDefaultAndNilStore(t *testing.T) {
 	if _, ok := store.Get(check.TargetNPM, "expired"); ok {
 		t.Fatal("expired should not be returned")
 	}
+	store.Put(check.TargetGitHubRepos, "conflict", check.Result{Status: check.StatusConflict}, time.Hour)
+	if res, ok := store.Get(check.TargetGitHubRepos, "conflict"); !ok || res.Status != check.StatusConflict {
+		t.Fatalf("conflict should be cached: %+v %v", res, ok)
+	}
 	if err := store.Close(); err != nil {
 		t.Fatal(err)
 	}

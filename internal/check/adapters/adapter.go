@@ -19,6 +19,8 @@ type Options struct {
 	// BaseURL overrides every adapter's upstream. It exists so end-to-end
 	// tests can point the real binary at a deterministic mock registry.
 	BaseURL string
+	// GithubMinStars is the minimum star count for GitHub project conflicts.
+	GithubMinStars int
 }
 
 // All returns every registry checker (domains are added separately by app).
@@ -39,6 +41,7 @@ func All(opts Options) []check.Checker {
 		NewHex(opts.HTTP, base),
 		NewPub(opts.HTTP, base),
 		NewGitHub(opts.HTTP, base, opts.GithubToken),
+		NewGitHubRepos(opts.HTTP, base, opts.GithubToken, opts.GithubMinStars),
 		NewMaven(opts.HTTP, base),
 		NewConda(opts.HTTP, base),
 		NewCocoaPods(opts.HTTP, base),

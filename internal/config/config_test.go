@@ -14,7 +14,7 @@ func TestLoadDefaults(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if cfg.Preset != "all" || len(cfg.Targets) != len(Presets["all"].Targets) || len(cfg.TLDs) == 0 || cfg.Timeout != "3s" {
+	if cfg.Preset != "default" || len(cfg.Targets) != len(Presets["default"].Targets) || len(cfg.TLDs) == 0 || cfg.Timeout != "3s" {
 		t.Fatalf("cfg=%+v", cfg)
 	}
 }
@@ -61,7 +61,7 @@ func TestPresetNamesAndDefaults(t *testing.T) {
 			t.Fatalf("missing preset %s", n)
 		}
 	}
-	if Defaults().Preset != "all" {
+	if Defaults().Preset != "default" {
 		t.Fatal("default preset")
 	}
 }

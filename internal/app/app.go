@@ -16,20 +16,21 @@ import (
 
 // Options is the resolved runtime configuration.
 type Options struct {
-	Name          string
-	Targets       []string
-	TLDs          []string
-	Concurrency   int
-	Timeout       time.Duration
-	CachePath     string
-	CacheTTL      time.Duration
-	NoCache       bool
-	Refresh       bool
-	GithubToken   string
-	ReducedMotion bool
-	ASCII         bool
-	NoColor       bool
-	Celebrate     bool
+	Name           string
+	Targets        []string
+	TLDs           []string
+	Concurrency    int
+	Timeout        time.Duration
+	CachePath      string
+	CacheTTL       time.Duration
+	NoCache        bool
+	Refresh        bool
+	GithubToken    string
+	GithubMinStars int
+	ReducedMotion  bool
+	ASCII          bool
+	NoColor        bool
+	Celebrate      bool
 }
 
 // Session owns the checker set, cache and engine for one process.
@@ -41,50 +42,53 @@ type Session struct {
 	Jobs     []engine.Job
 }
 
-// AllTargets is the stable order used by `--targets all` and the all preset.
+// AllTargets is every implemented target, used by `--targets all` and the all preset.
 var AllTargets = []string{
 	"domains", "npm", "pypi", "crates", "rubygems", "nuget", "dockerhub", "homebrew",
-	"packagist", "hex", "pub", "github", "maven", "conda", "cocoapods", "aur", "snap",
-	"chocolatey", "hackage", "jsr",
+	"packagist", "hex", "pub", "github", "github-repos", "maven", "conda", "cocoapods",
+	"aur", "snap", "chocolatey", "hackage", "jsr",
 }
 
 var targetAliases = map[string]check.Target{
-	"domain":        check.TargetDomains,
-	"domains":       check.TargetDomains,
-	"npm":           check.TargetNPM,
-	"pypi":          check.TargetPyPI,
-	"crates":        check.TargetCrates,
-	"cargo":         check.TargetCrates,
-	"rubygems":      check.TargetRubyGems,
-	"gem":           check.TargetRubyGems,
-	"gems":          check.TargetRubyGems,
-	"nuget":         check.TargetNuGet,
-	"docker":        check.TargetDocker,
-	"dockerhub":     check.TargetDocker,
-	"homebrew":      check.TargetHomebrew,
-	"brew":          check.TargetHomebrew,
-	"packagist":     check.TargetPackagist,
-	"composer":      check.TargetPackagist,
-	"hex":           check.TargetHex,
-	"pub":           check.TargetPub,
-	"pubdev":        check.TargetPub,
-	"github":        check.TargetGitHub,
-	"maven":         check.TargetMaven,
-	"maven-central": check.TargetMaven,
-	"conda":         check.TargetConda,
-	"anaconda":      check.TargetConda,
-	"cocoapods":     check.TargetCocoaPods,
-	"pods":          check.TargetCocoaPods,
-	"pod":           check.TargetCocoaPods,
-	"aur":           check.TargetAUR,
-	"snap":          check.TargetSnap,
-	"snapcraft":     check.TargetSnap,
-	"chocolatey":    check.TargetChocolatey,
-	"choco":         check.TargetChocolatey,
-	"hackage":       check.TargetHackage,
-	"haskell":       check.TargetHackage,
-	"jsr":           check.TargetJSR,
-	"deno":          check.TargetJSR,
+	"domain":          check.TargetDomains,
+	"domains":         check.TargetDomains,
+	"npm":             check.TargetNPM,
+	"pypi":            check.TargetPyPI,
+	"crates":          check.TargetCrates,
+	"cargo":           check.TargetCrates,
+	"rubygems":        check.TargetRubyGems,
+	"gem":             check.TargetRubyGems,
+	"gems":            check.TargetRubyGems,
+	"nuget":           check.TargetNuGet,
+	"docker":          check.TargetDocker,
+	"dockerhub":       check.TargetDocker,
+	"homebrew":        check.TargetHomebrew,
+	"brew":            check.TargetHomebrew,
+	"packagist":       check.TargetPackagist,
+	"composer":        check.TargetPackagist,
+	"hex":             check.TargetHex,
+	"pub":             check.TargetPub,
+	"pubdev":          check.TargetPub,
+	"github":          check.TargetGitHub,
+	"github-repos":    check.TargetGitHubRepos,
+	"github-repo":     check.TargetGitHubRepos,
+	"github-projects": check.TargetGitHubRepos,
+	"maven":           check.TargetMaven,
+	"maven-central":   check.TargetMaven,
+	"conda":           check.TargetConda,
+	"anaconda":        check.TargetConda,
+	"cocoapods":       check.TargetCocoaPods,
+	"pods":            check.TargetCocoaPods,
+	"pod":             check.TargetCocoaPods,
+	"aur":             check.TargetAUR,
+	"snap":            check.TargetSnap,
+	"snapcraft":       check.TargetSnap,
+	"chocolatey":      check.TargetChocolatey,
+	"choco":           check.TargetChocolatey,
+	"hackage":         check.TargetHackage,
+	"haskell":         check.TargetHackage,
+	"jsr":             check.TargetJSR,
+	"deno":            check.TargetJSR,
 }
 
 // CanonicalTargets normalizes aliases and removes duplicates.
@@ -153,7 +157,7 @@ func Prepare(ctx context.Context, opts Options) (*Session, error) {
 	baseURL := testBaseURL()
 	s := &Session{Options: opts, Checkers: map[check.Target]check.Checker{}}
 
-	for _, c := range adapters.All(adapters.Options{HTTP: h, GithubToken: opts.GithubToken, BaseURL: baseURL}) {
+	for _, c := range adapters.All(adapters.Options{HTTP: h, GithubToken: opts.GithubToken, BaseURL: baseURL, GithubMinStars: opts.GithubMinStars}) {
 		s.Checkers[c.Target()] = c
 	}
 	domainChecker := domain.New(h, baseURL)

@@ -123,8 +123,8 @@ func argError(args []string, base string) error {
 
 func addFlags(cmd *cobra.Command) {
 	f := cmd.Flags()
-	f.String("preset", "", "preset: all (default), indie, web, go, rust, jvm, apple, linux, data")
-	f.StringSlice("targets", nil, "comma-separated targets or all (domains, npm, pypi, crates, rubygems, nuget, dockerhub, homebrew, packagist, hex, pub, github, maven, conda, cocoapods, aur, snap, chocolatey, hackage, jsr)")
+	f.String("preset", "", "preset: default, indie, web, go, rust, jvm, apple, linux, data, all")
+	f.StringSlice("targets", nil, "comma-separated targets or all (domains, npm, pypi, crates, rubygems, nuget, dockerhub, homebrew, packagist, hex, pub, github, github-repos, maven, conda, cocoapods, aur, snap, chocolatey, hackage, jsr)")
 	f.StringSlice("tlds", nil, "comma-separated TLDs (com, io, dev, app, ai, co...)")
 	f.Int("concurrency", 0, "global concurrent checks (default 16)")
 	f.Duration("timeout", 0, "override the per-request timeout (default 3s)")
@@ -137,6 +137,7 @@ func addFlags(cmd *cobra.Command) {
 	f.Bool("celebrate", false, "show a small celebration when everything is available")
 	f.Bool("fail-if-taken", false, "exit 3 when any result is taken")
 	f.String("github-token", "", "GitHub token (prefer GITHUB_TOKEN / GH_TOKEN over shell history)")
+	f.Int("github-min-stars", 0, "minimum stars for the opt-in github-repos conflict check (default 1000)")
 	f.Bool("debug", false, "write debug logs to the cache directory")
 }
 
@@ -241,22 +242,30 @@ func resolveOptions(cmd *cobra.Command) (runOptions, error) {
 	if strings.ContainsAny(token, "\r\n\x00") {
 		return runOptions{}, fmt.Errorf("GitHub token contains invalid control characters")
 	}
+	minStars, _ := f.GetInt("github-min-stars")
+	if minStars <= 0 {
+		minStars = cfg.Github.MinStars
+	}
+	if minStars <= 0 {
+		minStars = 1000
+	}
 
 	return runOptions{
 		Options: app.Options{
-			Targets:       targets,
-			TLDs:          tlds,
-			Concurrency:   concurrency,
-			Timeout:       timeout,
-			CachePath:     cachePath,
-			CacheTTL:      cacheTTL,
-			NoCache:       noCache,
-			Refresh:       refresh,
-			GithubToken:   token,
-			ReducedMotion: reduced,
-			ASCII:         ascii,
-			NoColor:       noColor,
-			Celebrate:     celebrate,
+			Targets:        targets,
+			TLDs:           tlds,
+			Concurrency:    concurrency,
+			Timeout:        timeout,
+			CachePath:      cachePath,
+			CacheTTL:       cacheTTL,
+			NoCache:        noCache,
+			Refresh:        refresh,
+			GithubToken:    token,
+			GithubMinStars: minStars,
+			ReducedMotion:  reduced,
+			ASCII:          ascii,
+			NoColor:        noColor,
+			Celebrate:      celebrate,
 		},
 		format:        format,
 		onlyAvailable: onlyAvailable,

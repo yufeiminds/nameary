@@ -12,7 +12,7 @@ tooling.
 
 | Check | Result |
 |---|---|
-| `govulncheck ./...` (Go 1.26.10) | no vulnerabilities found |
+| `govulncheck ./...` (Go 1.26.11) | no vulnerabilities found |
 | `gosec -quiet ./...` | no findings |
 | `staticcheck ./...` | no findings |
 | `go vet ./...` | pass |
@@ -22,14 +22,14 @@ tooling.
 | `goreleaser check` / snapshot release | pass |
 
 The initial scan ran on Go 1.26.4 and reported 16 standard-library
-vulnerabilities. The project now requires **Go 1.26.10** (the patch level where
+vulnerabilities. The project now requires **Go 1.26.11** (the patch level where
 those advisories are fixed), and the CI/release/smoke workflows pin that
 version.
 
 ## Issues found and fixed
 
 1. **Standard-library vulnerabilities**
-   - Fixed by requiring Go 1.26.10 and updating CI, release and smoke workflows.
+   - Fixed by requiring Go 1.26.11 and updating CI, release and smoke workflows.
 2. **NPM/Packagist oversized responses truncated before JSON decode**
    - `registry.npmjs.org/react` is ~7 MB and `packagist.org` package metadata is
      ~7.7 MB; the 4 MB body cap caused decode errors. NPM now requests

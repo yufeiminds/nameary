@@ -137,6 +137,9 @@ func printSummary(w io.Writer, r Result) {
 	if n := r.Counts[check.StatusRateLimited]; n > 0 {
 		parts = append(parts, fmt.Sprintf("%d rate limited", n))
 	}
+	if n := r.Counts[check.StatusConflict]; n > 0 {
+		parts = append(parts, fmt.Sprintf("%d conflict", n))
+	}
 	if n := r.Counts[check.StatusError]; n > 0 {
 		parts = append(parts, fmt.Sprintf("%d error", n))
 	}
@@ -210,6 +213,8 @@ func glyphFor(s check.Status, ascii bool) (string, string) {
 			return "T", "\x1b[33m"
 		case check.StatusRateLimited:
 			return "R", "\x1b[33m"
+		case check.StatusConflict:
+			return "C", "\x1b[33m"
 		case check.StatusError:
 			return "X", "\x1b[31m"
 		case check.StatusSkipped, check.StatusCanceled:
@@ -229,6 +234,8 @@ func glyphFor(s check.Status, ascii bool) (string, string) {
 		return "◷", "\x1b[33m"
 	case check.StatusRateLimited:
 		return "↻", "\x1b[33m"
+	case check.StatusConflict:
+		return "⚑", "\x1b[33m"
 	case check.StatusError:
 		return "✕", "\x1b[31m"
 	case check.StatusSkipped, check.StatusCanceled:

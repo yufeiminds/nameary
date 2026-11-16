@@ -109,7 +109,7 @@ func TestResolveOptionsDefaults(t *testing.T) {
 	if opts.format != "auto" || opts.Concurrency != 16 || opts.NoCache || opts.Refresh {
 		t.Fatalf("opts=%+v", opts)
 	}
-	if len(opts.Targets) != len(config.Presets["all"].Targets) || len(opts.TLDs) == 0 || opts.Timeout != 3*time.Second {
+	if len(opts.Targets) != len(config.Presets["default"].Targets) || len(opts.TLDs) == 0 || opts.Timeout != 3*time.Second {
 		t.Fatalf("targets=%v tlds=%v", opts.Targets, opts.TLDs)
 	}
 }

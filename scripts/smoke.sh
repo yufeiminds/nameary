@@ -64,9 +64,10 @@ for entry in "${cases[@]}"; do
   printf 'ok  %-13s %s\n' "$target" "$name"
 done
 
-# A random name must fan out to every target without engine errors.
+# A random name must fan out to every default target without engine errors.
+# `all` includes the opt-in github-repos search, which is not exercised live.
 random="zzqxjvsmoke$(date +%s)"
-out="$("$BIN" check "$random" --preset all --format ndjson --cache-mode off --timeout 25s 2>"$TMP/stderr")" || {
+out="$("$BIN" check "$random" --preset default --format ndjson --cache-mode off --timeout 25s 2>"$TMP/stderr")" || {
   cat "$TMP/stderr" >&2
   fail "random-name fan-out failed"
 }

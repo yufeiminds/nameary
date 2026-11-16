@@ -7,7 +7,7 @@
 | Build / tests | `go build ./...`, `go test ./internal/...`, `go test -race ./internal/...`, `go test -count=1 ./e2e`, `go vet ./...`, `gofmt` pass |
 | Security | govulncheck/gosec/staticcheck clean; audit in `security-audit.md` |
 | OpenSSF | governance, contribution, support, threat model, CodeQL, Scorecard, Dependabot, dependency review |
-| Targets | 20 live sources; unit + e2e coverage; live smoke tested |
+| Targets | 20 default live sources + opt-in `github-repos`; unit + e2e coverage; live smoke tested |
 | CLI modes | TUI by default on a TTY; `--format console` progressive; `table/json/ndjson` headless |
 | Packaging | goreleaser builds + deb/rpm/apk + Homebrew formula; release workflow on `v*` tags |
 | CI | Linux test/race/e2e/vet/build + Homebrew formula check + manual/scheduled live smoke matrix |
@@ -28,7 +28,7 @@
   in [`release.md`](release.md).
 - [x] Apache-2.0 + third-party notices; license/notices included in archives
   and packages.
-- [x] Security audit: Go 1.26.10, govulncheck/gosec/staticcheck clean, terminal
+- [x] Security audit: Go 1.26.11, govulncheck/gosec/staticcheck clean, terminal
   sanitization and URL/file-permission hardening applied. See `security-audit.md`.
 
 ## P1 — distribution and confidence

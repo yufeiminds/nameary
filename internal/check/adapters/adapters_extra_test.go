@@ -31,6 +31,7 @@ func allAdapters() []adapterEntry {
 		{"hex", check.TargetHex, "acme", true, func(h *check.HTTP, b string) check.Checker { return NewHex(h, b) }},
 		{"pub", check.TargetPub, "acme", true, func(h *check.HTTP, b string) check.Checker { return NewPub(h, b) }},
 		{"github", check.TargetGitHub, "acme", true, func(h *check.HTTP, b string) check.Checker { return NewGitHub(h, b, "tok") }},
+		{"github-repos", check.TargetGitHubRepos, "acme", false, func(h *check.HTTP, b string) check.Checker { return NewGitHubRepos(h, b, "tok", 1000) }},
 		{"maven", check.TargetMaven, "acme", false, func(h *check.HTTP, b string) check.Checker { return NewMaven(h, b) }},
 		{"conda", check.TargetConda, "acme", false, func(h *check.HTTP, b string) check.Checker { return NewConda(h, b) }},
 		{"cocoapods", check.TargetCocoaPods, "Acme", true, func(h *check.HTTP, b string) check.Checker { return NewCocoaPods(h, b) }},
@@ -249,7 +250,7 @@ func TestNPMLatestAndScoped(t *testing.T) {
 
 func TestAllCheckers(t *testing.T) {
 	all := All(Options{})
-	if len(all) != 19 {
+	if len(all) != 20 {
 		t.Fatalf("len=%d", len(all))
 	}
 	seen := map[check.Target]bool{}
@@ -262,7 +263,60 @@ func TestAllCheckers(t *testing.T) {
 		}
 		seen[c.Target()] = true
 	}
-	if got := All(Options{HTTP: testHTTP()}); len(got) != 19 {
+	if got := All(Options{HTTP: testHTTP()}); len(got) != 20 {
 		t.Fatalf("len=%d", len(got))
+	}
+}
+
+func TestGitHubReposConflict(t *testing.T) {
+	var query string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/search/repositories" {
+			http.NotFound(w, r)
+			return
+		}
+		query = r.URL.Query().Get("q")
+		_, _ = w.Write([]byte(`{"total_count":2,"incomplete_results":false,"items":[` +
+			`{"name":"other","full_name":"other/acme","stargazers_count":90000},` +
+			`{"name":"acme","full_name":"mock/acme","html_url":"https://github.com/mock/acme","description":"mock","language":"Go","stargazers_count":4200,"fork":false,"archived":false,"updated_at":"2026-01-02T00:00:00Z"}` +
+			`]}`))
+	}))
+	defer srv.Close()
+
+	g := NewGitHubRepos(testHTTP(), srv.URL, "tok", 1000)
+	res, err := g.Check(context.Background(), "acme")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res.Status != check.StatusConflict || res.Summary != "mock/acme · 4.2k stars" {
+		t.Fatalf("res=%+v", res)
+	}
+	if res.Field("top_project") != "mock/acme" || res.Field("matches") != "1" {
+		t.Fatalf("fields=%+v", res.Fields)
+	}
+	if !strings.Contains(query, `"acme" in:name`) || !strings.Contains(query, "stars:>=1000") {
+		t.Fatalf("query=%q", query)
+	}
+}
+
+func TestGitHubReposIncompleteAndEmpty(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte(`{"total_count":0,"incomplete_results":true,"items":[]}`))
+	}))
+	defer srv.Close()
+	g := NewGitHubRepos(testHTTP(), srv.URL, "", 500)
+	res, err := g.Check(context.Background(), "acme")
+	if err != nil || res.Status != check.StatusUnknown {
+		t.Fatalf("res=%+v err=%v", res, err)
+	}
+
+	srv2 := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte(`{"total_count":0,"incomplete_results":false,"items":[]}`))
+	}))
+	defer srv2.Close()
+	g2 := NewGitHubRepos(testHTTP(), srv2.URL, "", 500)
+	res, err = g2.Check(context.Background(), "acme")
+	if err != nil || res.Status != check.StatusAvailable {
+		t.Fatalf("res=%+v err=%v", res, err)
 	}
 }

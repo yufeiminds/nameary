@@ -83,7 +83,7 @@ func (t theme) statusColor(s check.Status) color.Color {
 		return t.green
 	case check.StatusTaken:
 		return t.rose
-	case check.StatusUnknown, check.StatusTimeout, check.StatusRateLimited:
+	case check.StatusUnknown, check.StatusTimeout, check.StatusRateLimited, check.StatusConflict:
 		return t.amber
 	case check.StatusError:
 		return t.red
@@ -118,6 +118,8 @@ func (t theme) glyph(s check.Status, spinnerFrame string) string {
 			return "T"
 		case check.StatusRateLimited:
 			return "R"
+		case check.StatusConflict:
+			return "C"
 		case check.StatusError:
 			return "X"
 		case check.StatusSkipped, check.StatusCanceled:
@@ -137,6 +139,8 @@ func (t theme) glyph(s check.Status, spinnerFrame string) string {
 		return "◷"
 	case check.StatusRateLimited:
 		return "↻"
+	case check.StatusConflict:
+		return "⚑"
 	case check.StatusError:
 		return "✕"
 	case check.StatusSkipped, check.StatusCanceled:
@@ -156,7 +160,7 @@ func (t theme) flashColor(s check.Status) color.Color {
 			return lipgloss.Color("#123A32")
 		case check.StatusTaken:
 			return lipgloss.Color("#3A1722")
-		case check.StatusUnknown, check.StatusError, check.StatusTimeout, check.StatusRateLimited:
+		case check.StatusUnknown, check.StatusError, check.StatusTimeout, check.StatusRateLimited, check.StatusConflict:
 			return lipgloss.Color("#3A2C12")
 		default:
 			return lipgloss.Color("#1B2A3A")
@@ -167,7 +171,7 @@ func (t theme) flashColor(s check.Status) color.Color {
 		return lipgloss.Color("#D1FAE5")
 	case check.StatusTaken:
 		return lipgloss.Color("#FFE4E6")
-	case check.StatusUnknown, check.StatusError, check.StatusTimeout, check.StatusRateLimited:
+	case check.StatusUnknown, check.StatusError, check.StatusTimeout, check.StatusRateLimited, check.StatusConflict:
 		return lipgloss.Color("#FEF3C7")
 	default:
 		return lipgloss.Color("#E2E8F0")

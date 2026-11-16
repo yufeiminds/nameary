@@ -56,8 +56,7 @@ func TestGlyphFor(t *testing.T) {
 	for _, ascii := range []bool{true, false} {
 		for _, s := range []check.Status{
 			check.StatusAvailable, check.StatusTaken, check.StatusUnknown, check.StatusError,
-			check.StatusSkipped, check.StatusCanceled, check.StatusQueued, check.StatusTimeout, check.StatusRateLimited, check.StatusChecking,
-			check.StatusTimeout, check.StatusRateLimited,
+			check.StatusSkipped, check.StatusCanceled, check.StatusQueued, check.StatusTimeout, check.StatusRateLimited, check.StatusConflict, check.StatusChecking,
 		} {
 			g, c := glyphFor(s, ascii)
 			if g == "" || c == "" {
@@ -79,7 +78,7 @@ func TestConsolePaletteAndGlyphs(t *testing.T) {
 	p := newConsolePalette(false, true)
 	for _, s := range []check.Status{
 		check.StatusAvailable, check.StatusTaken, check.StatusUnknown, check.StatusError,
-		check.StatusSkipped, check.StatusCanceled, check.StatusQueued, check.StatusTimeout, check.StatusRateLimited,
+		check.StatusSkipped, check.StatusCanceled, check.StatusQueued, check.StatusTimeout, check.StatusRateLimited, check.StatusConflict,
 	} {
 		if p.statusColor(s) == nil {
 			t.Fatalf("missing color for %v", s)
@@ -100,7 +99,7 @@ func TestConsolePaletteAndGlyphs(t *testing.T) {
 	for _, ascii := range []bool{true, false} {
 		for _, s := range []check.Status{
 			check.StatusAvailable, check.StatusTaken, check.StatusUnknown, check.StatusError,
-			check.StatusSkipped, check.StatusCanceled, check.StatusQueued, check.StatusTimeout, check.StatusRateLimited,
+			check.StatusSkipped, check.StatusCanceled, check.StatusQueued, check.StatusTimeout, check.StatusRateLimited, check.StatusConflict,
 		} {
 			if consoleGlyph(s, ascii) == "" {
 				t.Fatalf("empty glyph for %v", s)
@@ -130,7 +129,7 @@ func TestConsoleStatusHelpers(t *testing.T) {
 	line := consoleStatusLine(map[check.Status]int{
 		check.StatusAvailable: 1, check.StatusTaken: 1, check.StatusUnknown: 1,
 		check.StatusError: 1, check.StatusSkipped: 1, check.StatusCanceled: 1,
-		check.StatusTimeout: 1, check.StatusRateLimited: 1,
+		check.StatusTimeout: 1, check.StatusRateLimited: 1, check.StatusConflict: 1,
 	}, 8, 8, "", 0, 140, p, true, time.Now().Add(-time.Second), true)
 	if !strings.Contains(line, "available") || !strings.Contains(line, "timeout") ||
 		!strings.Contains(line, "rate limit") || !strings.Contains(line, "skipped") {

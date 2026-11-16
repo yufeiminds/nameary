@@ -16,7 +16,8 @@ tag enables `NAMEARY_TEST_BASE_URL`, which points every adapter at a local
 `httptest` registry. The suite runs:
 
 - every adapter in both `taken` and `available` mode;
-- the full `--preset all` fan-out (25 jobs over 20 targets);
+- the full `--preset default` fan-out (25 jobs over 20 targets), plus a
+  separate mock-only `--preset all` case that includes `github-repos`;
 - NDJSON, grouped console and JSON rendering;
 - exit codes (`0`, `1`, `2`, `3`);
 - rate-limit handling;

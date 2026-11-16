@@ -68,7 +68,7 @@ func TestStatusAndConfidenceStrings(t *testing.T) {
 			t.Fatalf("%d: got %q want %q", s, got, want)
 		}
 	}
-	if !StatusAvailable.IsFinal() || !StatusCanceled.IsFinal() || !StatusTimeout.IsFinal() || !StatusRateLimited.IsFinal() ||
+	if !StatusAvailable.IsFinal() || !StatusCanceled.IsFinal() || !StatusTimeout.IsFinal() || !StatusRateLimited.IsFinal() || !StatusConflict.IsFinal() ||
 		StatusQueued.IsFinal() || StatusChecking.IsFinal() {
 		t.Fatal("IsFinal mapping wrong")
 	}

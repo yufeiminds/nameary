@@ -14,8 +14,12 @@ Distribution and CLI polish.
 - Added `nameary cache path` and `nameary cache clear`.
 - Added distinct `timeout` and `rate_limit` result statuses; they are no
   longer collapsed into `unknown`.
-- Default preset is now `all`; default request timeout is `3s`. Use
-  `--preset indie` for the previous fast subset.
+- Default preset is now `default` (the 20 stable sources); `all` includes every
+  implemented target. Default request timeout is `3s`; use `--preset indie` for
+  the fast subset.
+- Added opt-in `github-repos` detection for exact-name GitHub projects above a
+  configurable star threshold, reported as `conflict`. It is part of `all` and
+  `--targets all`, but not the default preset or live smoke.
 - Release checks run the race detector and the mock-registry e2e suite.
 
 ## v0.1.0
@@ -32,5 +36,5 @@ Initial release.
 - Per-target concurrency, timeouts, retries and bbolt cache.
 - `--style`, `--cache-mode`, presets and TOML config.
 - Shell completion, debug logging and release packaging.
-- Security hardening: Go 1.26.10, terminal-escape sanitization, safe external
+- Security hardening: Go 1.26.11, terminal-escape sanitization, safe external
   URLs, user-only file permissions, bounded inputs and HTTPS-only redirects.

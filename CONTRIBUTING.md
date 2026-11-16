@@ -15,8 +15,8 @@ spirit: small changes, tests, clear reviews, and a documented security process.
 
 ## Requirements
 
-- **Go 1.26.10** or newer (Charm v2 requires Go 1.26+; releases are built with
-  the patched 1.26.10 toolchain).
+- **Go 1.26.11** or newer (Charm v2 requires Go 1.26+; releases are built with
+  the patched 1.26.11 toolchain).
 - `git-lfs` only if you need the demo GIF/screenshots. The binary and tests do
   not require LFS assets.
 - `golangci-lint`, `gosec`, `govulncheck` and `staticcheck` are recommended for

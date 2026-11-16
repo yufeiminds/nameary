@@ -30,6 +30,7 @@ every target.
 | `hex` | `hex.pm/api/packages/{name}` | 4 | 8s | 24h |
 | `pub` | `pub.dev/api/packages/{name}` | 4 | 8s | 24h |
 | `github` | GitHub REST (token) or public profile HEAD | 1 (4 with token) | 8s | 12h |
+| `github-repos` | GitHub Search API `/search/repositories` (opt-in; included in `all`, not `default`) | 1 | 8s | 24h |
 | `maven` | `search.maven.org/solrsearch/select` | 4 | 8s | 24h |
 | `conda` | `api.anaconda.org/search?name=...&limit=50` | 3 | 10s | 24h |
 | `cocoapods` | `cocoapods.org/pods/{name}` HEAD | 2 | 6s | 24h |

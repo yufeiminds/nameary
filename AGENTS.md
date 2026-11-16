@@ -31,9 +31,9 @@ Instructions for AI coding agents working on **nameary**.
   - `goreleaser check` for release or packaging changes
 - Never make pull-request CI depend on live registries. Use mocks and fixtures;
   live checks belong in `scripts/smoke.sh`.
-- `github-repos` project search is opt-in only. Do not add it to the `all`
-  preset, `--targets all`, or the live smoke matrix. Cover it with deterministic
-  mock tests instead.
+- `github-repos` project search is opt-in through the `all` preset and
+  `--targets all`, but not the `default` preset or the live smoke matrix. Cover
+  it with deterministic mock tests; live checks must keep using `default`.
 
 ## Demo recording
 

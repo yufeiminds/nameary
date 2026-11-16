@@ -17,26 +17,27 @@ import (
 type Target string
 
 const (
-	TargetDomains    Target = "domains"
-	TargetNPM        Target = "npm"
-	TargetPyPI       Target = "pypi"
-	TargetCrates     Target = "crates"
-	TargetRubyGems   Target = "rubygems"
-	TargetNuGet      Target = "nuget"
-	TargetDocker     Target = "dockerhub"
-	TargetHomebrew   Target = "homebrew"
-	TargetPackagist  Target = "packagist"
-	TargetHex        Target = "hex"
-	TargetPub        Target = "pub"
-	TargetGitHub     Target = "github"
-	TargetMaven      Target = "maven"
-	TargetConda      Target = "conda"
-	TargetCocoaPods  Target = "cocoapods"
-	TargetAUR        Target = "aur"
-	TargetSnap       Target = "snap"
-	TargetChocolatey Target = "chocolatey"
-	TargetHackage    Target = "hackage"
-	TargetJSR        Target = "jsr"
+	TargetDomains     Target = "domains"
+	TargetNPM         Target = "npm"
+	TargetPyPI        Target = "pypi"
+	TargetCrates      Target = "crates"
+	TargetRubyGems    Target = "rubygems"
+	TargetNuGet       Target = "nuget"
+	TargetDocker      Target = "dockerhub"
+	TargetHomebrew    Target = "homebrew"
+	TargetPackagist   Target = "packagist"
+	TargetHex         Target = "hex"
+	TargetPub         Target = "pub"
+	TargetGitHub      Target = "github"
+	TargetGitHubRepos Target = "github-repos"
+	TargetMaven       Target = "maven"
+	TargetConda       Target = "conda"
+	TargetCocoaPods   Target = "cocoapods"
+	TargetAUR         Target = "aur"
+	TargetSnap        Target = "snap"
+	TargetChocolatey  Target = "chocolatey"
+	TargetHackage     Target = "hackage"
+	TargetJSR         Target = "jsr"
 )
 
 // Category groups rows in the UI.
@@ -62,6 +63,7 @@ const (
 	StatusCanceled
 	StatusTimeout
 	StatusRateLimited
+	StatusConflict
 )
 
 func (s Status) String() string {
@@ -86,6 +88,8 @@ func (s Status) String() string {
 		return "timeout"
 	case StatusRateLimited:
 		return "rate_limit"
+	case StatusConflict:
+		return "conflict"
 	default:
 		return "unknown"
 	}
@@ -94,7 +98,7 @@ func (s Status) String() string {
 // IsFinal reports whether the status will not change without a rerun.
 func (s Status) IsFinal() bool {
 	switch s {
-	case StatusAvailable, StatusTaken, StatusUnknown, StatusError, StatusSkipped, StatusCanceled, StatusTimeout, StatusRateLimited:
+	case StatusAvailable, StatusTaken, StatusUnknown, StatusError, StatusSkipped, StatusCanceled, StatusTimeout, StatusRateLimited, StatusConflict:
 		return true
 	}
 	return false

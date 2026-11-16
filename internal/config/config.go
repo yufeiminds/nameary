@@ -16,9 +16,13 @@ type Preset struct {
 	TLDs    []string
 }
 
-// Presets are intentionally opinionated: all sources is the default; use
-// indie for a fast subset.
+// Presets are intentionally opinionated: default is the stable source set;
+// all includes every implemented target, and indie is the fast subset.
 var Presets = map[string]Preset{
+	"default": {
+		Targets: []string{"domains", "npm", "pypi", "crates", "rubygems", "nuget", "dockerhub", "homebrew", "packagist", "hex", "pub", "github", "maven", "conda", "cocoapods", "aur", "snap", "chocolatey", "hackage", "jsr"},
+		TLDs:    []string{"com", "io", "dev", "app", "ai", "co"},
+	},
 	"indie": {
 		Targets: []string{"domains", "npm", "pypi", "github"},
 		TLDs:    []string{"com", "io", "dev", "app", "ai", "co"},
@@ -52,14 +56,14 @@ var Presets = map[string]Preset{
 		TLDs:    []string{"com", "io", "dev"},
 	},
 	"all": {
-		Targets: []string{"domains", "npm", "pypi", "crates", "rubygems", "nuget", "dockerhub", "homebrew", "packagist", "hex", "pub", "github", "maven", "conda", "cocoapods", "aur", "snap", "chocolatey", "hackage", "jsr"},
+		Targets: []string{"domains", "npm", "pypi", "crates", "rubygems", "nuget", "dockerhub", "homebrew", "packagist", "hex", "pub", "github", "maven", "conda", "cocoapods", "aur", "snap", "chocolatey", "hackage", "jsr", "github-repos"},
 		TLDs:    []string{"com", "io", "dev", "app", "ai", "co"},
 	},
 }
 
 // PresetNames returns the stable list used in help and forms.
 func PresetNames() []string {
-	return []string{"indie", "web", "go", "rust", "jvm", "apple", "linux", "data", "all"}
+	return []string{"default", "indie", "web", "go", "rust", "jvm", "apple", "linux", "data", "all"}
 }
 
 // Config mirrors the TOML file.
@@ -74,14 +78,15 @@ type Config struct {
 
 	Github struct {
 		TokenEnv string `toml:"token_env"`
+		MinStars int    `toml:"min_stars"`
 	} `toml:"github"`
 }
 
 // Defaults returns the built-in configuration.
 func Defaults() Config {
-	p := Presets["all"]
+	p := Presets["default"]
 	return Config{
-		Preset:      "all",
+		Preset:      "default",
 		TLDs:        append([]string(nil), p.TLDs...),
 		Targets:     append([]string(nil), p.Targets...),
 		Concurrency: 16,
@@ -89,7 +94,8 @@ func Defaults() Config {
 		CacheTTL:    "",
 		Github: struct {
 			TokenEnv string `toml:"token_env"`
-		}{TokenEnv: "GITHUB_TOKEN"}, // #nosec G101 -- environment variable name, not a secret.
+			MinStars int    `toml:"min_stars"`
+		}{TokenEnv: "GITHUB_TOKEN", MinStars: 1000}, // #nosec G101 -- environment variable name, not a secret.
 	}
 }
 
@@ -154,6 +160,9 @@ func (c *Config) applyDefaults() {
 	}
 	if c.Github.TokenEnv == "" {
 		c.Github.TokenEnv = d.Github.TokenEnv
+	}
+	if c.Github.MinStars <= 0 {
+		c.Github.MinStars = d.Github.MinStars
 	}
 }
 

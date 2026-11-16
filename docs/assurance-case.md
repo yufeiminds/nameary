@@ -8,7 +8,7 @@ evidence supporting them. It is intentionally conservative: gaps are listed.
 **Evidence**
 
 - `go.mod`/`go.sum` pin every module; `go mod verify` passes.
-- CI builds with Go 1.26.10 and runs `goreleaser` from a clean checkout.
+- CI builds with Go 1.26.11 and runs `goreleaser` from a clean checkout.
 - `goreleaser` produces cross-platform archives and checksums.
 - `Makefile` uses the same version/commit/date ldflags as goreleaser.
 
@@ -79,7 +79,7 @@ limited. Adding a second reviewer is a maturity goal.
 
 **Evidence**
 
-- `govulncheck` reports no vulnerabilities with Go 1.26.10.
+- `govulncheck` reports no vulnerabilities with Go 1.26.11.
 - `gosec` and `staticcheck` report no findings.
 - Dependabot and dependency review are enabled.
 

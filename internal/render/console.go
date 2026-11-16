@@ -98,7 +98,7 @@ func (p consolePalette) statusColor(s check.Status) color.Color {
 		return p.green
 	case check.StatusTaken:
 		return p.rose
-	case check.StatusUnknown, check.StatusTimeout, check.StatusRateLimited:
+	case check.StatusUnknown, check.StatusTimeout, check.StatusRateLimited, check.StatusConflict:
 		return p.amber
 	case check.StatusError:
 		return p.red
@@ -442,6 +442,9 @@ func consoleStatusLine(counts map[check.Status]int, done, total int, last string
 		if n := counts[check.StatusRateLimited]; n > 0 {
 			parts = append(parts, p.style(p.amber).Render(fmt.Sprintf("R %d rate limit", n)))
 		}
+		if n := counts[check.StatusConflict]; n > 0 {
+			parts = append(parts, p.style(p.amber).Render(fmt.Sprintf("C %d conflict", n)))
+		}
 		if n := counts[check.StatusError]; n > 0 {
 			parts = append(parts, p.style(p.red).Render(fmt.Sprintf("✕ %d error", n)))
 		}
@@ -465,6 +468,9 @@ func consoleStatusLine(counts map[check.Status]int, done, total int, last string
 	}
 	if n := counts[check.StatusRateLimited]; n > 0 {
 		line += p.style(p.amber).Render(fmt.Sprintf("   R %d", n))
+	}
+	if n := counts[check.StatusConflict]; n > 0 {
+		line += p.style(p.amber).Render(fmt.Sprintf("   C %d", n))
 	}
 	if last != "" {
 		line += p.style(p.dim).Render("   " + last)
@@ -655,6 +661,9 @@ func consoleSummary(res Result, p consolePalette, ascii, celebrate bool, width i
 	if n := res.Counts[check.StatusRateLimited]; n > 0 {
 		parts = append(parts, p.style(p.amber).Render(fmt.Sprintf("R %d rate limited", n)))
 	}
+	if n := res.Counts[check.StatusConflict]; n > 0 {
+		parts = append(parts, p.style(p.amber).Render(fmt.Sprintf("C %d conflict", n)))
+	}
 	if n := res.Counts[check.StatusError]; n > 0 {
 		parts = append(parts, p.style(p.red).Render(fmt.Sprintf("✕ %d error", n)))
 	}
@@ -742,6 +751,8 @@ func consoleGlyph(s check.Status, ascii bool) string {
 			return "T"
 		case check.StatusRateLimited:
 			return "R"
+		case check.StatusConflict:
+			return "C"
 		case check.StatusError:
 			return "X"
 		case check.StatusSkipped, check.StatusCanceled:
@@ -761,6 +772,8 @@ func consoleGlyph(s check.Status, ascii bool) string {
 		return "◷"
 	case check.StatusRateLimited:
 		return "↻"
+	case check.StatusConflict:
+		return "⚑"
 	case check.StatusError:
 		return "✕"
 	case check.StatusSkipped, check.StatusCanceled:

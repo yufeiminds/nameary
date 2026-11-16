@@ -434,6 +434,9 @@ func (m *model) statsLine(w int) string {
 	if n := m.counts[check.StatusRateLimited]; n > 0 {
 		parts = append(parts, plain(check.StatusRateLimited, n, "rate limited"))
 	}
+	if n := m.counts[check.StatusConflict]; n > 0 {
+		parts = append(parts, plain(check.StatusConflict, n, "conflict"))
+	}
 	if inFlight > 0 {
 		parts = append(parts, m.theme.style(m.theme.accent).Render("◐ ")+
 			m.theme.style(m.theme.text).Render(fmt.Sprintf("%d", inFlight))+" "+

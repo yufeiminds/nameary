@@ -67,8 +67,12 @@ func TestEveryAdapterTaken(t *testing.T) {
 				t.Fatalf("exit=%d stderr=%s", code, stderr)
 			}
 			rec := oneRecord(t, stdout)
-			if rec.Status != "taken" {
-				t.Fatalf("status=%q record=%+v", rec.Status, rec)
+			want := "taken"
+			if tc.target == "github-repos" {
+				want = "conflict"
+			}
+			if rec.Status != want {
+				t.Fatalf("status=%q want %q record=%+v", rec.Status, want, rec)
 			}
 			if rec.Target != tc.target {
 				t.Fatalf("target=%q want %q", rec.Target, tc.target)
@@ -105,7 +109,7 @@ func TestEveryAdapterAvailable(t *testing.T) {
 
 func TestFanoutAcrossEveryTarget(t *testing.T) {
 	mode.Store(modeTaken)
-	stdout, stderr, code := runCLI(t, "check", "acme", "--preset", "all", "--format", "ndjson", "--cache-mode", "off", "--timeout", "10s")
+	stdout, stderr, code := runCLI(t, "check", "acme", "--preset", "default", "--format", "ndjson", "--cache-mode", "off", "--timeout", "10s")
 	if code != 0 {
 		t.Fatalf("exit=%d stderr=%s", code, stderr)
 	}
@@ -121,9 +125,34 @@ func TestFanoutAcrossEveryTarget(t *testing.T) {
 		}
 	}
 	for _, tc := range adapters() {
+		if tc.target == "github-repos" {
+			if seen[tc.target] {
+				t.Fatal("github-repos must not be in the default preset")
+			}
+			continue
+		}
 		if !seen[tc.target] {
 			t.Fatalf("target %s missing from fan-out", tc.target)
 		}
+	}
+}
+
+func TestAllPresetIncludesProjectSearch(t *testing.T) {
+	mode.Store(modeTaken)
+	stdout, stderr, code := runCLI(t, "check", "acme", "--preset", "all", "--format", "ndjson", "--cache-mode", "off", "--timeout", "10s")
+	if code != 0 {
+		t.Fatalf("exit=%d stderr=%s", code, stderr)
+	}
+	rows := records(t, stdout)
+	if len(rows) != 26 {
+		t.Fatalf("rows=%d want 26", len(rows))
+	}
+	seen := map[string]bool{}
+	for _, r := range rows {
+		seen[r.Target] = true
+	}
+	if !seen["github-repos"] {
+		t.Fatal("all preset must include github-repos")
 	}
 }
 
@@ -226,6 +255,7 @@ func adapters() []adapterCase {
 		{"hex", "hex", "acme"},
 		{"pub", "pub", "acme"},
 		{"github", "github", "acme"},
+		{"github-repos", "github-repos", "acme"},
 		{"maven", "maven", "acme"},
 		{"conda", "conda", "acme"},
 		{"cocoapods", "cocoapods", "acme"},
@@ -351,6 +381,8 @@ func mockRegistry(w http.ResponseWriter, r *http.Request) {
 			writeJSON(w, `{"items":[]}`)
 		case path == "/api/v2/Packages":
 			writeJSON(w, `<feed xmlns="http://www.w3.org/2005/Atom"></feed>`)
+		case path == "/search/repositories":
+			writeJSON(w, `{"total_count":0,"incomplete_results":false,"items":[]}`)
 		case path == "/rpc/v5/info":
 			writeJSON(w, `{"resultcount":0,"results":[]}`)
 		default:
@@ -380,6 +412,8 @@ func mockRegistry(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, `{"name":"acme","latest_version":"1.2.3","downloads":{"all":42},"meta":{"description":"mock"}}`)
 	case path == "/users/acme":
 		writeJSON(w, `{"login":"acme","type":"User","name":"Acme","bio":"mock","public_repos":7,"followers":3,"created_at":"2020-01-02T00:00:00Z"}`)
+	case path == "/search/repositories":
+		writeJSON(w, `{"total_count":1,"incomplete_results":false,"items":[{"name":"acme","full_name":"mock/acme","html_url":"https://github.com/mock/acme","description":"mock","language":"Go","stargazers_count":4200,"forks_count":10,"fork":false,"archived":false,"updated_at":"2026-01-02T00:00:00Z"}]}`)
 	case path == "/solrsearch/select":
 		writeJSON(w, `{"response":{"numFound":1,"docs":[{"id":"com.acme:acme","g":"com.acme","a":"acme","latestVersion":"1.2.3","versionCount":4}]}}`)
 	case path == "/search":

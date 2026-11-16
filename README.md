@@ -1,5 +1,7 @@
 <div align="center">
 
+English | [简体中文](README.zh-CN.md)
+
 <h1>nameary</h1>
 
 <p><strong>Find a name before you commit.</strong></p>
@@ -17,8 +19,8 @@
 
 </div>
 
-`nameary` checks a name across **20 sources** — domains, package registries and
-handles — in parallel, streaming each result as it arrives. On a terminal it
+`nameary` checks a name across **20 default sources** — domains, package
+registries and handles — in parallel, streaming each result as it arrives. On a terminal it
 opens a full-screen interactive TUI; piped, it prints a plain table.
 
 ```bash
@@ -98,6 +100,7 @@ Every row is one source, with a status and a confidence:
 | `taken` | The name exists at that source. |
 | `timeout` | The source did not answer within the timeout. |
 | `rate_limit` | The source returned 429 or its quota is exhausted. |
+| `conflict` | A high-star GitHub project has the same repository name. Advisory, not a namespace blocker. |
 | `unknown` | Inconclusive: a blocked WHOIS, truncated results or an unclassified response. Never reported as `available`. |
 | `error` / `skipped` / `canceled` | No verdict: the source failed, the check could not run (for example the name is not valid there), or the run was interrupted. |
 
@@ -216,8 +219,8 @@ nameary acme --style plain
 
 | Flag | Description |
 |---|---|
-| `--preset` | `all` (default), `indie`, `web`, `go`, `rust`, `jvm`, `apple`, `linux`, `data` |
-| `--targets` | comma-separated target list, or `all` |
+| `--preset` | `default` (default), `indie`, `web`, `go`, `rust`, `jvm`, `apple`, `linux`, `data`, `all` |
+| `--targets` | comma-separated target list; `all` includes every implemented target, including opt-in `github-repos` |
 | `--tlds` | comma-separated TLDs |
 | `--concurrency` | global concurrent checks (default 16) |
 | `--timeout` | per-request timeout override (default 3s) |
@@ -230,13 +233,14 @@ nameary acme --style plain
 | `--celebrate` | toast when everything is available |
 | `--fail-if-taken` | exit 3 if anything is taken |
 | `--github-token` | GitHub token (or `GITHUB_TOKEN` / `GH_TOKEN`) |
+| `--github-min-stars` | minimum stars for `github-repos` conflicts (default 1000) |
 | `--debug` | write `debug.log` to the cache directory |
 
 ### Presets
 
 | Preset | Targets | TLDs |
 |---|---|---|
-| `all` (default) | every supported target | com, io, dev, app, ai, co |
+| `default` (default) | the 20 stable sources | com, io, dev, app, ai, co |
 | `indie` | domains, npm, pypi, github | com, io, dev, app, ai, co |
 | `web` | domains, npm, pypi, github, jsr | com, io, dev, app |
 | `go` | domains, github, homebrew | com, io, dev |
@@ -245,7 +249,7 @@ nameary acme --style plain
 | `apple` | domains, cocoapods, github | com, io, dev |
 | `linux` | domains, aur, snap, homebrew, github | com, io, dev |
 | `data` | domains, conda, pypi, github | com, io, dev |
-| `all` | every target | com, io, dev, app, ai, co |
+| `all` | every implemented target, including `github-repos` | com, io, dev, app, ai, co |
 
 ### Targets
 
@@ -263,6 +267,7 @@ nameary acme --style plain
 | `hex` | hex.pm API | 404 |
 | `pub` | pub.dev API | 404 |
 | `github` | REST API or public profile | 404 / profile page 404 |
+| `github-repos` | GitHub Search API (opt-in, `all` preset) | no exact same-name repository above the star threshold |
 | `maven` | Maven Central Solr search | artifact ID absent across all groups |
 | `conda` | Anaconda package search | no exact package name across channels |
 | `cocoapods` | cocoapods.org/pods | 404 |
@@ -304,7 +309,7 @@ path` prints it (`~/.config/nameary/config.toml` on Linux,
 
 | Key | Default | Description |
 |---|---|---|
-| `preset` | `"all"` | Preset: sets `targets` and `tlds` |
+| `preset` | `"default"` | Preset: sets `targets` and `tlds` |
 | `targets` | from preset | Sources to check |
 | `tlds` | from preset | TLDs to check |
 | `concurrency` | `16` | Global concurrent checks |
@@ -312,9 +317,10 @@ path` prints it (`~/.config/nameary/config.toml` on Linux,
 | `cache_ttl` | per-target | Global cache TTL override, e.g. `"12h"` |
 | `celebrate` | `false` | Toast when everything is available |
 | `[github] token_env` | `"GITHUB_TOKEN"` | Environment variable to read the GitHub token from |
+| `[github] min_stars` | `1000` | Minimum stars for the opt-in `github-repos` conflict check |
 
 ```toml
-preset = "all"
+preset = "default"
 tlds = ["com", "io", "dev", "app", "ai", "co"]
 targets = ["domains", "npm", "pypi", "github"]
 concurrency = 16
@@ -324,6 +330,7 @@ celebrate = false
 
 [github]
 token_env = "GITHUB_TOKEN"
+min_stars = 1000
 ```
 
 Precedence: flag > environment > config > default.
@@ -387,6 +394,21 @@ GitHub allows 60 anonymous requests/hour, so without a token `nameary` checks
 the public profile page (`HEAD github.com/<name>`) instead — 1 request/second
 with a 12h cache — and a single run does not exhaust the quota. With a token it
 uses the REST API and returns richer details.
+
+### GitHub project-name conflicts
+
+`github-repos` is opt-in because it uses the stricter GitHub Search API. It is
+included in `--preset all` and `--targets all`, but not in the `default` preset:
+
+```bash
+nameary acme --targets github-repos
+nameary acme --preset all
+nameary acme --targets all,github-repos --github-min-stars 500
+```
+
+It searches repository names, filters exact matches, and reports a `conflict`
+when an exact-name repository meets the star threshold. It does not affect
+`--fail-if-taken`. Set `GITHUB_TOKEN` for reliable search quota.
 
 ## Development
 

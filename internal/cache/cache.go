@@ -88,12 +88,12 @@ func (s *Store) Get(target check.Target, query string) (check.Result, bool) {
 	return out, true
 }
 
-// Put stores a definitive result. Errors and unknowns are never cached.
+// Put stores a definitive result. Errors, timeouts and unknowns are never cached.
 func (s *Store) Put(target check.Target, query string, r check.Result, ttl time.Duration) {
 	if s == nil || s.db == nil || ttl <= 0 {
 		return
 	}
-	if r.Status != check.StatusAvailable && r.Status != check.StatusTaken {
+	if r.Status != check.StatusAvailable && r.Status != check.StatusTaken && r.Status != check.StatusConflict {
 		return
 	}
 	r.Err = nil
