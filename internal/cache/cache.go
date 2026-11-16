@@ -120,5 +120,5 @@ func (s *Store) Close() error {
 }
 
 func key(target check.Target, query string) []byte {
-	return []byte(fmt.Sprintf("v1:%s:%s", target, query))
+	return []byte(fmt.Sprintf("v2:%s:%s", target, query))
 }

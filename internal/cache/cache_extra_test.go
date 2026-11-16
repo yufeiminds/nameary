@@ -106,7 +106,7 @@ func TestExpiredEntry(t *testing.T) {
 }
 
 func TestKeyShape(t *testing.T) {
-	if got := string(key(check.TargetNPM, "acme")); got != "v1:npm:acme" {
+	if got := string(key(check.TargetNPM, "acme")); got != "v2:npm:acme" {
 		t.Fatalf("key=%q", got)
 	}
 }
