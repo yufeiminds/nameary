@@ -166,6 +166,9 @@ func statusRank(s check.Status) int {
 func (m *model) listHeight() int {
 	h := m.height
 	h -= 6 // blank, brand, name, progress, stats, rule
+	if m.hasConflict() {
+		h-- // conflict banner
+	}
 	h -= m.footerHeight()
 	if h < 1 {
 		h = 1

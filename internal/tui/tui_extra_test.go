@@ -972,3 +972,30 @@ func TestProjectSubrows(t *testing.T) {
 		t.Fatalf("missing project subrow:\n%s", lines)
 	}
 }
+
+func TestNarrowViewShowsConflictBanner(t *testing.T) {
+	m := testModelWithRows()
+	m.width, m.height = 80, 24
+	m.rows = append(m.rows, &row{
+		job: engine.Job{
+			ID: "3", TargetLabel: "github-repos", Category: check.CategoryHandles,
+			Label: "acme", Raw: "acme", Query: "acme",
+		},
+		status: check.StatusConflict,
+		result: check.Result{
+			Status: check.StatusConflict,
+			Projects: []check.Project{
+				{FullName: "google-deepmind/acme", Stars: 4100, Language: "Go"},
+			},
+		},
+	})
+	m.byID["3"] = len(m.rows) - 1
+	m.rebuildItems()
+	content := m.View().Content
+	if !strings.Contains(content, "CONFLICT") || !strings.Contains(content, "google-deepmind/acme") || !strings.Contains(content, "★4.1k") {
+		t.Fatalf("missing conflict banner:\n%s", content)
+	}
+	if lines := strings.Split(content, "\n"); len(lines) != 24 {
+		t.Fatalf("lines=%d", len(lines))
+	}
+}

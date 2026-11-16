@@ -95,14 +95,50 @@ func (m *model) headerLines(w int) []string {
 	}
 	name := m.theme.bold(m.theme.text).Render(textutil.Clean(m.name))
 	sources := m.theme.style(m.theme.muted).Render(fmt.Sprintf("%d sources", m.sourceCount()))
-	return []string{
+	lines := []string{
 		"",
 		joinLR(left, right, w),
 		joinLR(name, sources, w),
 		m.progressLine(w),
 		m.statsLine(w),
-		m.rule(w),
 	}
+	if banner := m.conflictBanner(w); banner != "" {
+		lines = append(lines, banner)
+	}
+	return append(lines, m.rule(w))
+}
+
+func (m *model) hasConflict() bool {
+	for _, r := range m.rows {
+		if r.status == check.StatusConflict {
+			return true
+		}
+	}
+	return false
+}
+
+func (m *model) conflictBanner(w int) string {
+	var parts []string
+	for _, r := range m.rows {
+		if r.status != check.StatusConflict {
+			continue
+		}
+		for i, p := range r.result.Projects {
+			if i >= 3 {
+				parts = append(parts, fmt.Sprintf("+%d more", len(r.result.Projects)-3))
+				break
+			}
+			parts = append(parts, fmt.Sprintf("%s ★%s", textutil.Clean(p.FullName), formatStars(p.Stars)))
+		}
+		if len(parts) > 0 {
+			break
+		}
+	}
+	if len(parts) == 0 {
+		return ""
+	}
+	return fit(m.theme.bold(m.theme.amber).Render("CONFLICT ")+
+		m.theme.style(m.theme.text).Render(strings.Join(parts, "  ·  ")), w)
 }
 
 func (m *model) sourceCount() int {
